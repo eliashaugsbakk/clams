@@ -41,8 +41,8 @@ public class UploadHandler implements HttpHandler {
                 respond(exchange,HttpURLConnection.HTTP_UNAUTHORIZED);
                 return;
             }
-        } catch (SQLException e) {
-            System.err.println("Database error");
+        } catch (Exception e) {
+            System.err.println("Database or system error: " + e.getMessage());
             respond(exchange, HttpURLConnection.HTTP_INTERNAL_ERROR);
         }
 

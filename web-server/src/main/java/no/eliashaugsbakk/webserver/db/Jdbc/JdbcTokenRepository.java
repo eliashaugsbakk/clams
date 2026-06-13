@@ -1,5 +1,6 @@
 package no.eliashaugsbakk.webserver.db.Jdbc;
 
+import no.eliashaugsbakk.webserver.db.DataAccessException;
 import no.eliashaugsbakk.webserver.db.TokenRepository;
 
 import java.sql.Connection;
@@ -16,21 +17,23 @@ public class JdbcTokenRepository implements TokenRepository {
     }
 
     @Override
-    public boolean addToken(String token) throws SQLException {
+    public boolean addToken(String token) {
         String sql =
                 """
                 INSERT INTO tokens (tokenValue) VALUES (?)
                 """;
         try (Connection conn = dbManager.getConnection();
-                PreparedStatement stmt = conn.prepareStatement(sql)) {
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setString(1, token);
             return stmt.executeUpdate() == 1;
+        } catch (SQLException e) {
+            throw new DataAccessException("Error adding token", e);
         }
     }
 
 
     @Override
-    public boolean removeToken(String token) throws SQLException {
+    public boolean removeToken(String token) {
         String sql =
                 """
                 DELETE FROM tokens WHERE tokenValue = ?;
@@ -39,11 +42,13 @@ public class JdbcTokenRepository implements TokenRepository {
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setString(1, token);
             return stmt.executeUpdate() == 1;
+        } catch (SQLException e) {
+            throw new DataAccessException("Error removing token", e);
         }
     }
 
     @Override
-    public boolean isValid(String token) throws SQLException {
+    public boolean isValid(String token) {
         String sql =
                 """
                 SELECT 1 FROM tokens WHERE tokenValue = ?;
@@ -54,6 +59,8 @@ public class JdbcTokenRepository implements TokenRepository {
             try (ResultSet rs = stmt.executeQuery()) {
                 return rs.next();
             }
+        } catch (SQLException e) {
+            throw new DataAccessException("Error validating token", e);
         }
     }
 }

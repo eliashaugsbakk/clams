@@ -1,10 +1,8 @@
 package no.eliashaugsbakk.webserver;
 
 import com.sun.net.httpserver.HttpServer;
-import no.eliashaugsbakk.webserver.api.HomeHandler;
-import no.eliashaugsbakk.webserver.api.SearchHandler;
+import no.eliashaugsbakk.webserver.api.BlogHandler;
 import no.eliashaugsbakk.webserver.api.UploadHandler;
-import no.eliashaugsbakk.webserver.api.WikiHandler;
 import no.eliashaugsbakk.webserver.db.PageRepository;
 import no.eliashaugsbakk.webserver.db.TokenRepository;
 import no.eliashaugsbakk.webserver.service.PostStorageService;
@@ -19,15 +17,8 @@ public class Server {
     public void start(PageRepository pageRepo, PostStorageService postStorage, TokenRepository tokenRepo) throws IOException {
         HttpServer server = HttpServer.create(new InetSocketAddress(port), 0);
 
-        HomeHandler home = new HomeHandler(pageRepo);
-        server.createContext("/", home);
-        server.createContext("/home", home);
-
-        WikiHandler wikiHandler = new WikiHandler(pageRepo);
-        server.createContext("/wiki", wikiHandler);
-
-        SearchHandler searchHandler = new SearchHandler(pageRepo);
-        server.createContext("/search", searchHandler);
+        BlogHandler blogHandler = new BlogHandler(pageRepo);
+        server.createContext("/blog", blogHandler);
 
         UploadHandler uploadHandler = new UploadHandler(postStorage, tokenRepo);
         server.createContext("/upload", uploadHandler);

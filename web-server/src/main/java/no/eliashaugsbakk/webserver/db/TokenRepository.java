@@ -1,9 +1,7 @@
 package no.eliashaugsbakk.webserver.db;
 
-import java.sql.SQLException;
-
 public interface TokenRepository {
-    boolean addToken(String token) throws SQLException;
-    boolean removeToken(String token) throws SQLException;
-    boolean isValid(String token) throws SQLException;
+    boolean addToken(String token);
+    boolean removeToken(String token);
+    boolean isValid(String token);
 }

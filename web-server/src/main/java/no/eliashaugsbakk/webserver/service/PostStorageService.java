@@ -1,6 +1,7 @@
 package no.eliashaugsbakk.webserver.service;
 
 import no.eliashaugsbakk.utils.Image;
+import no.eliashaugsbakk.webserver.db.DataAccessException;
 import no.eliashaugsbakk.webserver.db.PageRepository;
 import no.eliashaugsbakk.webserver.model.Page;
 
@@ -8,7 +9,6 @@ import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.sql.SQLException;
 import java.time.Instant;
 import java.util.List;
 
@@ -39,7 +39,7 @@ public class PostStorageService {
                     html
             ));
 
-        } catch (SQLException e) {
+        } catch (DataAccessException e) {
             System.err.println("Error while trying to save page: " + e.getMessage());
             return false;
         }
@@ -71,7 +71,7 @@ public class PostStorageService {
     }
 
 
-    private String generateSlug(String title) throws SQLException {
+    private String generateSlug(String title) {
         String base = title.toLowerCase()
                 .replaceAll("æ", "ae")
                 .replaceAll("ø", "oe")
@@ -81,7 +81,7 @@ public class PostStorageService {
 
         String slug = base;
         int counter = 2;
-        while (pageRepo.getAllSlugs().contains(slug)) {
+        while (pageRepo.slugExists(slug)) {
             slug = base + "-" + counter++;
         }
         return slug;
