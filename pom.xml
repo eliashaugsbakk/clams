@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  MAVEN COMMAND REFERENCE FOR PERSONAL PROJECTS
+
+  [ DEVELOPMENT ]
+  - Standard JAR:       mvn clean package
+  - Fat (Shaded) JAR:   mvn clean package (Generates *-fat.jar)
+  - Native Binary:      mvn clean package -Pnative
+
+  [ TESTING ]
+  - Unit Tests:         mvn test
+  - Integration Tests:  mvn failsafe:integration-test failsafe:verify
+  - Full Verification:  mvn verify (Runs all tests + coverage reports)
+
+  [ RELEASES & UPDATES ]
+  - Update version:     mvn release:prepare
+  - Check Updates:      mvn versions:display-dependency-updates
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>no.eliashaugsbakk.clams-cms</groupId>
+    <artifactId>clams-cms</artifactId>
+    <version>0.1.0-SNAPSHOT</version>
+    <packaging>pom</packaging>
+    <modules>
+        <module>clams-server</module>
+        <module>clams-shared</module>
+    </modules>
+
+    <scm>
+        <connection>scm:git:https://github.com/eliashaugsbakk/clams-cms.git</connection>
+        <developerConnection>scm:git:git@github.com:eliashaugsbakk/clams-cms.git</developerConnection>
+        <url>https://github.com/eliashaugsbakk/clams-cms</url>
+        <tag>HEAD</tag>
+    </scm>
+
+    <properties>
+        <maven.compiler.source>25</maven.compiler.source>
+        <maven.compiler.target>25</maven.compiler.target>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
+        <junit.version>6.1.1</junit.version>
+        <mockito.version>5.23.0</mockito.version>
+
+        <maven-compiler.version>3.14.1</maven-compiler.version>
+        <maven-surefire.version>3.5.4</maven-surefire.version>
+        <maven-failsafe.version>3.5.6</maven-failsafe.version>
+        <maven-shade.version>3.6.0</maven-shade.version>
+        <maven-release.version>3.1.1</maven-release.version>
+        <versions-maven.version>2.18.0</versions-maven.version>
+    </properties>
+
+    <dependencies>
+        <!-- Testing Frameworks -->
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <version>${junit.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-junit-jupiter</artifactId>
+            <version>${mockito.version}</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <version>${maven-compiler.version}</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-surefire-plugin</artifactId>
+                    <version>${maven-surefire.version}</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-failsafe-plugin</artifactId>
+                    <version>${maven-failsafe.version}</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-shade-plugin</artifactId>
+                    <version>${maven-shade.version}</version>
+                    <executions>
+                        <execution>
+                            <phase>package</phase>
+                            <goals>
+                                <goal>shade</goal>
+                            </goals>
+                            <configuration>
+                                <shadedArtifactAttached>true</shadedArtifactAttached>
+                                <shadedClassifierName>fat</shadedClassifierName>
+                            </configuration>
+                        </execution>
+                    </executions>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-release-plugin</artifactId>
+                    <version>${maven-release.version}</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.codehaus.mojo</groupId>
+                    <artifactId>versions-maven-plugin</artifactId>
+                    <version>${versions-maven.version}</version>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+
+        <plugins>
+            <!-- Java Compiler Setup -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <release>25</release>
+                    <encoding>UTF-8</encoding>
+                </configuration>
+            </plugin>
+
+            <!-- Unit Tests (*Test.java) -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+            </plugin>
+
+            <!-- Integration Tests (*IT.java) -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-failsafe-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>integration-test</goal>
+                            <goal>verify</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- Automated Versioning / Git Tagging -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-release-plugin</artifactId>
+                <configuration>
+                    <tagNameFormat>v@{project.version}</tagNameFormat>
+                    <autoVersionSubmodules>true</autoVersionSubmodules>
+                </configuration>
+            </plugin>
+
+            <!-- Dependency Management utility -->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>versions-maven-plugin</artifactId>
+            </plugin>
+        </plugins>
+    </build>
+</project>
