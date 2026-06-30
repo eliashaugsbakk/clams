@@ -2,27 +2,32 @@ package no.eliashaugsbakk.uploader.utils;
 
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
+import java.util.stream.Collectors;
 
 /**
- * Generation of authentication tokens.
+ * Generation of cryptographically secure authentication tokens.
  */
 public class AuthUtils {
-  final String chrs = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
-  static final SecureRandom secureRandom;
+  private static final String CHARS =
+      "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+  private static final SecureRandom SECURE_RANDOM;
 
   static {
     try {
-      secureRandom = SecureRandom.getInstanceStrong();
+      SECURE_RANDOM = SecureRandom.getInstanceStrong();
     } catch (NoSuchAlgorithmException e) {
-      throw new RuntimeException(e);
+      throw new ExceptionInInitializerError(e);
     }
   }
 
-  public String generateAuthKey(int keyLength) {
-    return secureRandom
-        .ints(keyLength, 0, chrs.length())
-        .mapToObj(chrs::charAt)
-        .collect(StringBuilder::new, StringBuilder::append, StringBuilder::append)
-        .toString();
+  /**
+   * Generate a cryptographically secure random token.
+   *
+   * @param length the desired token length
+   * @return a random token of the specified length
+   */
+  public String generateAuthKey(int length) {
+    return SECURE_RANDOM.ints(length, 0, CHARS.length()).mapToObj(CHARS::charAt)
+        .map(String::valueOf).collect(Collectors.joining());
   }
 }

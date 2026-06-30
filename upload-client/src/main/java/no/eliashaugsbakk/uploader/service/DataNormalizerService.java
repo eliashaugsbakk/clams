@@ -1,15 +1,5 @@
 package no.eliashaugsbakk.uploader.service;
 
-import no.eliashaugsbakk.uploader.exception.UploaderException;
-import no.eliashaugsbakk.uploader.model.TextFile;
-import no.eliashaugsbakk.uploader.utils.MdToHtml;
-import no.eliashaugsbakk.utils.Image;
-
-import javax.imageio.IIOImage;
-import javax.imageio.ImageIO;
-import javax.imageio.ImageWriteParam;
-import javax.imageio.ImageWriter;
-import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -18,56 +8,69 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
+import java.util.Set;
 import java.util.regex.Pattern;
+import javax.imageio.ImageIO;
+import net.coobird.thumbnailator.Thumbnails;
+import no.eliashaugsbakk.uploader.config.Config;
+import no.eliashaugsbakk.uploader.exception.UploaderException;
+import no.eliashaugsbakk.uploader.model.TextFile;
+import no.eliashaugsbakk.utils.Image;
 
 public class DataNormalizerService {
-
+  private static final Set<String> SUPPORTED_IMAGE_EXTENSIONS =
+      Set.of(".jpg", ".jpeg", ".png", ".gif", ".bmp", ".wbmp");
 
   private TextFile textFile = null;
-  private final List<Image> imageFiles;
   private final List<Image> normalizedImageFiles;
+  private final int maxSize;
+  private final float quality;
 
   public DataNormalizerService(List<String> filePaths) throws IOException {
-
-    imageFiles = new ArrayList<>();
+    this.maxSize = Config.getInstance().getMaxImageSize();
+    this.quality = Config.getInstance().getImageQuality();
+    List<Image> imageFiles = new ArrayList<>();
     normalizedImageFiles = new ArrayList<>();
 
     boolean markdownSeen = false;
-
     for (String s : filePaths) {
       Path path = Path.of(s);
-
-      byte[] fileData = Files.readAllBytes(path);
-
       String fileName = path.getFileName().toString();
+      String extension = getFileExtension(fileName);
 
-
-      if (fileName.endsWith(".md") && !markdownSeen) {
+      if (extension.equalsIgnoreCase(".md")) {
+        if (markdownSeen) {
+          throw new UploaderException(
+              "Multiple .md files found. Only one markdown file is supported.");
+        }
         markdownSeen = true;
-        textFile = new TextFile(fileName, new MdToHtml().getHtml(Files.readString(path)));
-      } else if (fileName.endsWith(".png")
-              || fileName.endsWith(".jpg")
-              || fileName.endsWith(".jpeg")
-              || fileName.endsWith(".bmp")) {
+        textFile = new TextFile(fileName, Files.readString(path));
+      } else if (SUPPORTED_IMAGE_EXTENSIONS.contains(extension.toLowerCase())) {
+        byte[] fileData = Files.readAllBytes(path);
         imageFiles.add(new Image(fileName, fileData));
       } else {
-        throw new UploaderException("Unrecognized file extension: \"" + fileName + "\"");
+        throw new UploaderException(
+            "Unsupported file extension: \"" + fileName + "\". Supported: " +
+                SUPPORTED_IMAGE_EXTENSIONS + " and .md");
       }
     }
 
     if (!markdownSeen) {
-      throw new UploaderException("No file with .md extensions found");
+      throw new UploaderException("No .md file found. Exactly one markdown file is required.");
     }
 
+    // Normalize and collect all images
     for (Image image : imageFiles) {
       try {
         normalizedImageFiles.add(normalizeImage(image));
       } catch (IOException e) {
-        throw new UploaderException("Error reading image file: " + e.getMessage());
+        throw new UploaderException(
+            "Error processing image file '" + image.title() + "': " + e.getMessage(), e);
       }
     }
 
-    // verify image names are present in the Markdown.
+    // Verify all normalized image names are referenced in the markdown
     verifyImageNaming(normalizedImageFiles, textFile.body());
   }
 
@@ -79,81 +82,96 @@ public class DataNormalizerService {
     return normalizedImageFiles;
   }
 
-  private void verifyImageNaming(List<Image> images, String markdownFile) {
+  /**
+   * Extract file extension (lowercase, with leading dot).
+   *
+   * @param fileName the file name
+   * @return the extension (e.g., ".jpg"), or empty string if no extension
+   */
+  private String getFileExtension(String fileName) {
+    int lastDot = fileName.lastIndexOf('.');
+    if (lastDot <= 0) {
+      return "";
+    }
+    return fileName.substring(lastDot).toLowerCase(Locale.ROOT);
+  }
+
+  /**
+   * Verify that each normalized image is referenced by name in the markdown. Uses word boundaries
+   * to avoid partial matches.
+   *
+   * @param images          the normalized images
+   * @param markdownContent the Markdown body text
+   * @throws UploaderException if an image is not referenced
+   */
+  private void verifyImageNaming(List<Image> images, String markdownContent) {
     for (Image image : images) {
-
-      String name = image.title();
-
-      String regex = "\\b" + Pattern.quote(name) + "\\b";
-      boolean found = Pattern.compile(regex).matcher(markdownFile).find();
-
+      String imageName = image.title();
+      // Use word boundaries to match only whole filenames
+      String regex = "(?<!\\S)" + Pattern.quote(imageName) + "(?!\\S)";
+      boolean found = Pattern.compile(regex).matcher(markdownContent).find();
       if (!found) {
-        throw new RuntimeException("Image '" + name + "' is not referenced in the Markdown file.");
+        throw new UploaderException(
+            "Image '" + imageName + "' is not referenced in the markdown file.");
       }
     }
   }
 
   /**
-   * Normalizes an image by resizing it to a maximum width, stripping metadata,
-   * and converting it to a compressed JPEG format.
-   * <p>
-   * This method ensures compatibility for slow connections by applying a
-   * 0.75 compression quality and forcing a white background for transparent sources.
-   * </p>
-   * <p><b>Note:</b> This method was AI-generated</p>
+   * Normalize an image: resize, convert format based on alpha channel, apply quality settings, and
+   * update markdown references.
    *
-   * @param imageToNormalize The original Image object containing raw bytes and title.
-   * @return A new Image object with JPEG bytes and a .jpg filename.
-   * @throws IOException If the image data is invalid or cannot be encoded.
+   * @param imageToNormalize the image to normalize
+   * @return a new Image with normalized data and updated filename
+   * @throws IOException if image processing fails
    */
   private Image normalizeImage(Image imageToNormalize) throws IOException {
-    byte[] imageData = imageToNormalize.data();
-    BufferedImage originalImage = ImageIO.read(new ByteArrayInputStream(imageData));
-    if (originalImage == null) throw new IOException("Invalid image data");
-
-    // 1. Calculate new dimensions (keeping aspect ratio)
-    int targetWidth = Math.min(originalImage.getWidth(), 800);
-    int targetHeight = (int) (originalImage.getHeight() * ((double) targetWidth / originalImage.getWidth()));
-
-    // 2. Create the resized image (RGB for JPEG)
-    BufferedImage outputImage = new BufferedImage(targetWidth, targetHeight, BufferedImage.TYPE_INT_RGB);
-    Graphics2D g2d = outputImage.createGraphics();
-    g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC);
-    g2d.drawImage(originalImage, 0, 0, targetWidth, targetHeight, null);
-    g2d.dispose();
-
-    // 3. Manually compress as JPEG
-    try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
-      ImageWriter writer = ImageIO.getImageWritersByFormatName("jpg").next();
-      ImageWriteParam param = writer.getDefaultWriteParam();
-
-      // Enable compression and set quality (0.75 is a great balance)
-      param.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
-      param.setCompressionQuality(0.60f);
-
-      writer.setOutput(ImageIO.createImageOutputStream(baos));
-      writer.write(null, new IIOImage(outputImage, null, null), param);
-      writer.dispose();
-
-      System.out.println("Final compressed size: " + baos.size() + " bytes");
-      return new Image(getNewImageName(imageToNormalize.title()), baos.toByteArray());
+    BufferedImage originalImage = ImageIO.read(new ByteArrayInputStream(imageToNormalize.data()));
+    if (originalImage == null) {
+      throw new IOException("Failed to decode image: " + imageToNormalize.title());
     }
+
+    boolean hasAlpha = originalImage.getColorModel().hasAlpha();
+    String outputFormat = hasAlpha ? "png" : "jpg";
+
+    ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+    Thumbnails.Builder<BufferedImage> builder =
+        Thumbnails.of(originalImage).size(maxSize, maxSize).outputFormat(outputFormat);
+
+    if (!hasAlpha) {
+      builder.outputQuality(quality);
+    }
+
+    builder.toOutputStream(outputStream);
+
+    String newImageName = getNewImageName(imageToNormalize.title());
+    return new Image(newImageName, outputStream.toByteArray());
   }
 
-
+  /**
+   * Generate a normalized filename: convert all image extensions to .jpg (or keep .png if has
+   * transparency). Updates markdown references.
+   *
+   * @param oldImageName the original filename
+   * @return the new filename (e.g., "photo.bmp" -> "photo.jpg")
+   */
   private String getNewImageName(String oldImageName) {
-    String newImageName = oldImageName.replaceAll("(?i)\\.(png|jpg|jpeg|gif)$", ".jpg");
-
-    // Update Markdown references
+    // Strip any known image extension and replace with .jpg (or .png for transparency)
+    String newImageName = oldImageName.replaceAll("(?i)\\.(jpg|jpeg|png|gif|bmp|wbmp)$", ".jpg");
     updateMarkdownLinks(oldImageName, newImageName);
-
     return newImageName;
   }
 
-
+  /**
+   * Update markdown to replace old image name with new image name. Uses regex with word boundaries
+   * to avoid replacing partial matches.
+   *
+   * @param oldName the old filename
+   * @param newName the new filename
+   */
   private void updateMarkdownLinks(String oldName, String newName) {
-    textFile = new TextFile(
-            textFile.title(),
-            textFile.body().replace(oldName, newName));
+    String regex = "(?<!\\S)" + Pattern.quote(oldName) + "(?!\\S)";
+    String updatedBody = Pattern.compile(regex).matcher(textFile.body()).replaceAll(newName);
+    textFile = new TextFile(textFile.title(), updatedBody);
   }
 }

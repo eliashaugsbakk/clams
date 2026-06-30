@@ -1,114 +1,64 @@
 package no.eliashaugsbakk.uploader.controller;
 
-import no.eliashaugsbakk.uploader.config.ConfigManager;
-import no.eliashaugsbakk.uploader.exception.UploaderException;
-import no.eliashaugsbakk.uploader.model.CliInput;
-import no.eliashaugsbakk.uploader.model.NetworkConfig;
-import no.eliashaugsbakk.uploader.service.DataNormalizerService;
-import no.eliashaugsbakk.uploader.service.NetworkService;
-import no.eliashaugsbakk.uploader.utils.AuthUtils;
-import no.eliashaugsbakk.utils.HashUtils;
-import no.eliashaugsbakk.utils.JsonUtils;
-import no.eliashaugsbakk.utils.Post;
-
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
+import no.eliashaugsbakk.uploader.model.Input;
+import no.eliashaugsbakk.uploader.service.UploaderOrchestrator;
 
+/**
+ * CLI entry point. Parses arguments and delegates to UploaderOrchestrator.
+ */
 public class CliController {
+  private final UploaderOrchestrator orchestrator;
 
-  ConfigManager configManager;
-  public CliController() throws IOException {
-    configManager = new ConfigManager();
+  public CliController(UploaderOrchestrator orchestrator) {
+    this.orchestrator = orchestrator;
   }
 
   public void execute(String[] args) throws Exception {
-    CliInput input = new ArgParser().parse(args);
+    Input input = new ArgParser().parse(args);
 
     if (input.helpRequested()) {
       printHelp();
       return;
     }
 
-    updatePersistentConfig(input);
-
-    if (input.networkTest() || !input.filePaths().isEmpty()) {
-      NetworkConfig cfg = getValidatedConfig();
-      NetworkService service = new NetworkService(cfg.url(), cfg.token(), cfg.port());
-
-      if (input.networkTest()) {
-        service.testConnectivity();
-      }
-
-      if (!input.filePaths().isEmpty()) {
-        performUpload(service, input.filePaths());
-      }
-
-    }
-  }
-
-  private NetworkConfig getValidatedConfig() {
-    String url = configManager.readUrl();
-    String token = configManager.readToken();
-    int port = configManager.readPort();
-
-    if (url == null || url.equals("-")) {
-      throw new UploaderException("Incomplete url configuration. Use --setUrl <url> to set the url.");
-    }
-    if (token == null || token.equals("-")) {
-      throw new UploaderException("Incomplete token configuration. Use --setToken to generate a new token.");
-    }
-    if (port == 0) {
-      throw new UploaderException("Incomplete configuration. Use --setPort to specify the port of your local tor daemon");
-    }
-
-    return new NetworkConfig(url, token, port);
-  }
-
-  private void updatePersistentConfig(CliInput input) throws IOException {
+    // Update config
     if (input.url() != null) {
-      configManager.setUrl(input.url());
-      IO.println("Url has been set: " + input.url());
-    }
-    if (input.port() != null) {
-      configManager.setPort(input.port());
-      if (input.port() == 9150) {
-        IO.println("Port has been set: " + input.port() + " (Tor Browser Daemon)");
-      } else {
-        IO.println("Port has been set: " + input.port());
-      }
+      orchestrator.setServerUrl(input.url());
+      IO.println("URL has been set: " + input.url());
     }
     if (input.generateToken()) {
-      String token = new AuthUtils().generateAuthKey(32);
-      configManager.setToken(token);
-      IO.println("Token has been set: " + token);
+      orchestrator.generateToken();
+      IO.println("Token has been generated.");
     }
     if (input.token() != null) {
-      configManager.setToken(input.token());
-      IO.println("Token has been set: " + input.token());
+      orchestrator.setToken(input.token());
+      IO.println("Token has been set.");
     }
-  }
 
-  private void performUpload(NetworkService networkService, List<String> filePaths) throws Exception {
+    // Execute actions
+    if (input.networkTest()) {
+      orchestrator.testConnectivity();
+      IO.println("Connection test completed.");
+    }
 
-    DataNormalizerService dataNormalizer = new DataNormalizerService(filePaths);
+    if (!input.filePaths().isEmpty()) {
+      String summary = IO.readln("Short description/summary of the document: ");
+      String tags = IO.readln("Tags separated by comma: ");
 
+      List<String> tagsList = Arrays.stream(tags.split(","))
+          .map(String::trim)
+          .map(String::toLowerCase)
+          .filter(tag -> !tag.isEmpty())
+          .collect(Collectors.toList());
 
-    Post post = new Post(
-            dataNormalizer.getTextFile().title(),
-            dataNormalizer.getTextFile().body(),
-            dataNormalizer.getImagesFiles()
-    );
-
-    String json = new JsonUtils().getJson(post);
-
-    IO.println("Uploading file(s)...");
-    networkService.uploadBundle(
-            json.getBytes(StandardCharsets.UTF_8),
-            "Upload_JSON_" + System.currentTimeMillis(),
-            new HashUtils().calculateSHA256(json.getBytes()));
-
-    IO.println("File(s) have been uploaded.");
+      IO.println("Uploading file(s)...");
+      orchestrator.uploadFiles(input.filePaths(), summary, tagsList);
+      IO.println("File(s) have been uploaded.");
+    }
   }
 
   private void printHelp() {
@@ -126,11 +76,7 @@ public class CliController {
         Options:
         [-t | --setToken]               - generates a new Authentication Token.
         [-u | --setUrl]   <url>         - sets the host url.
-        [-p | --setPort]  <port>/defult - sets the port to the local Tor Daemon you have running.
-        [-p | --setPort]                - sets the port to 9150 default
         [-n | --networkTest]            - tests the network connection.
-                                          (Port default argument: Tor Browser Daemon = 9150)
-                                          (The default port of the Tor Daemon is 9050)
         """);
   }
 }

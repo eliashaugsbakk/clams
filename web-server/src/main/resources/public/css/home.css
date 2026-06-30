@@ -1,0 +1,27 @@
+.profile-img {
+    border: 3px solid var(--text-color);
+    border-radius: 20px;
+    width: 200px;
+    display: block;
+    margin-left: auto;
+    margin-bottom: 20px;
+}
+
+.right-column a {
+    font-size: 1.2rem;
+}
+
+.description {
+    display: block;
+    font-size: 0.9rem;
+    opacity: 0.8;
+    white-space: normal;
+    overflow: visible;
+    word-wrap: break-word;
+}
+
+@media (max-width: 600px) {
+    .profile-img {
+        margin: 0 auto 20px auto;
+    }
+}

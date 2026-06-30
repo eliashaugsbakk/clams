@@ -1,18 +1,20 @@
 package no.eliashaugsbakk.uploader;
 
-import no.eliashaugsbakk.uploader.controller.CliController;
-import no.eliashaugsbakk.uploader.exception.UploaderException;
-
 import java.io.IOException;
 import java.time.Duration;
 import java.time.Instant;
+import no.eliashaugsbakk.uploader.config.Config;
+import no.eliashaugsbakk.uploader.controller.CliController;
+import no.eliashaugsbakk.uploader.exception.UploaderException;
+import no.eliashaugsbakk.uploader.service.ConnectivityChecker;
+import no.eliashaugsbakk.uploader.service.HttpClientService;
+import no.eliashaugsbakk.uploader.service.UploadService;
+import no.eliashaugsbakk.uploader.service.UploaderOrchestrator;
 
 public class Main {
   static void main(String[] args) {
-    Instant start = Instant.now();
-
     try {
-      CliController controller = new CliController();
+      CliController controller = getCliController();
       controller.execute(args);
 
     } catch (UploaderException e) {
@@ -27,10 +29,17 @@ public class Main {
     } catch (Exception e) {
       System.err.println("\n[X] ERROR: " + e.getLocalizedMessage());
       System.exit(1);
-    } finally {
-      Instant finish = Instant.now();
-      long timeElapsed = Duration.between(start, finish).toMillis();
-      System.out.println("Program run time: " + timeElapsed + "ms");
     }
+  }
+
+  private static CliController getCliController() {
+    HttpClientService httpClientService = new HttpClientService(20);
+    UploadService uploadService =
+        new UploadService(httpClientService, Config.getInstance().getUrl(),
+            Config.getInstance().getToken());
+    ConnectivityChecker connectivityChecker = new ConnectivityChecker(httpClientService);
+    UploaderOrchestrator uploaderOrchestrator =
+        new UploaderOrchestrator(uploadService, connectivityChecker);
+    return new CliController(uploaderOrchestrator);
   }
 }

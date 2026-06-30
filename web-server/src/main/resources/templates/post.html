@@ -2,38 +2,38 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>${title} - Elias Haugsbakk</title>
-    <link rel="icon" type="image/png" href="/static/assets/images/system/elias_haugsbakk.png">
-    <link rel="stylesheet" href="/static/assets/css/common.css">
-    <link rel="stylesheet" href="/static/assets/css/post.css">
+    <title>{{ title }} - Elias Haugsbakk</title>
+    <link rel="icon" type="image/png" href="/images/elias_haugsbakk.png">
+    <link rel="stylesheet" href="/css/common.css">
+    <link rel="stylesheet" href="/css/post.css">
 </head>
 <body>
 
-    <main class="main-container">
-        <header class="post-header">
-            <span class="post-date">${published_date}</span>
-            <span class="post-author">${author}</span>
-        </header>
+<main class="main-container">
+    <header class="post-header">
+        <span class="post-date">{{ published_date }}</span>
+        <span class="post-author">{{ author }}</span>
+    </header>
 
-        <h1>${title}</h1>
+    <h1>{{ title }}</h1>
 
-        <article class="post-content">
-            ${content}
-        </article>
+    <article class="post-content">
+        {{ content | raw }}
+    </article>
 
-        <nav class="post-nav">
-            ${previous_post_link}
-            ${next_post_link}
-        </nav>
-    </main>
+    <nav class="post-nav">
+        {{ previous_post_link | raw }}
+        {{ next_post_link | raw }}
+    </nav>
+</main>
 
-    <footer>
-        <p>
-            <span class="footer-left"><a href="/">eliashaugsbakk.xyz</a></span>
-            <span class="footer-separator">|</span>
-            <span class="footer-right"><a href="mailto:elias.haugsbakk@gmail.com">elias.haugsbakk@gmail.com</a></span>
-        </p>
-    </footer>
+<footer>
+    <p>
+        <span class="footer-left"><a href="/">eliashaugsbakk.xyz</a></span>
+        <span class="footer-separator">|</span>
+        <span class="footer-right"><a href="mailto:elias.haugsbakk@gmail.com">elias.haugsbakk@gmail.com</a></span>
+    </p>
+</footer>
 
 </body>
 </html>

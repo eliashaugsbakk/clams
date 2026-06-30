@@ -1,0 +1,60 @@
+/* portfolio.css - specific styles for the portfolio page */
+
+.portfolio-category {
+    margin-bottom: 80px;
+}
+
+.project-item {
+    margin-bottom: 100px;
+}
+
+.project-item h3 {
+    margin-top: 0;
+    font-size: 1.5rem;
+}
+
+.tech-stack {
+    margin: 10px 0 20px 0;
+}
+
+.project-links {
+    margin-top: 20px;
+    font-size: 0.9rem;
+}
+
+.project-img, .project-placeholder {
+    width: 100%;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    display: block;
+}
+
+.project-placeholder {
+    height: 200px;
+    background-color: #e0e0dc;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #888;
+    font-size: 0.9rem;
+}
+
+/* Simple list for smaller projects */
+.simple-project-list {
+    margin-top: 30px;
+}
+
+.simple-project-list li {
+    margin-bottom: 1.5rem;
+}
+
+.tech-stack-inline {
+    font-size: 0.85rem;
+    opacity: 0.6;
+    margin: 0 10px;
+}
+
+.small-link {
+    font-size: 0.8rem;
+    margin-left: 5px;
+}
