@@ -1,5 +1,3 @@
-/* projects.css - specific styles for the projects page */
-
 .projects-category {
     margin-bottom: 80px;
 }
@@ -15,6 +13,19 @@
 
 .tech-stack {
     margin: 10px 0 20px 0;
+}
+
+.tag {
+    display: inline-block;
+    background-color: rgba(0,0,0,0.05);
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-right: 5px;
+    border: 1px solid var(--border-color);
 }
 
 .project-links {
@@ -39,7 +50,6 @@
     font-size: 0.9rem;
 }
 
-/* Simple list for smaller projects */
 .simple-project-list {
     margin-top: 30px;
 }
@@ -52,9 +62,4 @@
     font-size: 0.85rem;
     opacity: 0.6;
     margin: 0 10px;
-}
-
-.small-link {
-    font-size: 0.8rem;
-    margin-left: 5px;
 }

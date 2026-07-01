@@ -1,39 +1,22 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="UTF-8">
-    <title>Elias Haugsbakk</title>
-    <link rel="stylesheet" href="/css/common.css">
-    <link rel="stylesheet" href="/css/home.css">
-</head>
-<body>
+{% extends "templates/layout.html" %}
 
-    <main class="main-container">
-        <h1>Elias Haugsbakk's Webpage</h1>
-        
-        <div class="content-grid">
-            <div class="left-column">
-                <img src="/images/elias_haugsbakk.JPEG" alt="Image of Elias Haugsbakk" class="profile-img">
-                <p>Hello! I am Elias and this is my webpage.</p>
-            </div>
+{% block content %}
+<main class="main-container">
+    <h1>Elias Haugsbakk's Webpage</h1>
 
-            <div class="right-column">
-                <ul>
-                    <li><a href="/blog">Blog</a> <span class="description">-- personal projects and thoughts</span></li>
-                    <li><a href="https://github.com/eliashaugsbakk">GitHub</a> <span class="description">-- home for my code</span></li>
-                    <li><a href="/projects">Projects</a> <span class="description">-- the projects I have worked on</span></li>
-                </ul>
-            </div>
+    <div class="content-grid">
+        <div class="left-column">
+            <img src="/images/elias_haugsbakk.JPEG" alt="Image of Elias Haugsbakk" class="profile-img">
+            <p>Hello! I am Elias and this is my webpage.</p>
         </div>
-    </main>
 
-    <footer>
-        <p>
-            <span class="footer-left"><a href="/">eliashaugsbakk.xyz</a></span>
-            <span class="footer-separator">|</span>
-            <span class="footer-right"><a href="mailto:elias.haugsbakk@gmail.com">elias.haugsbakk@gmail.com</a></span>
-        </p>
-    </footer>
-
-</body>
-</html>
+        <div class="right-column">
+            <ul>
+                <li><a href="/blog">Blog</a> <span class="description">-- personal projects and thoughts</span></li>
+                <li><a href="https://github.com/eliashaugsbakk">GitHub</a> <span class="description">-- home for my code</span></li>
+                <li><a href="/projects">Projects</a> <span class="description">-- the projects I have worked on</span></li>
+            </ul>
+        </div>
+    </div>
+</main>
+{% endblock %}

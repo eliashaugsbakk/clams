@@ -54,7 +54,7 @@ public class BlogPostRepoSqlite implements BlogPostRepo {
   @Override
   public Optional<Post> getPost(String slug) {
     String sql = """
-        SELECT title, slug, content, published
+        SELECT title, slug, summary, content, published
         FROM posts
         WHERE slug = ?
         """;
@@ -68,12 +68,13 @@ public class BlogPostRepoSqlite implements BlogPostRepo {
         if (resultSet.next()) {
           String title = resultSet.getString("title");
           String postSlug = resultSet.getString("slug");
+          String summary = resultSet.getString("summary");
           String content = resultSet.getString("content");
 
           String publishedRaw = resultSet.getString("published");
           Instant timePublished = Instant.parse(publishedRaw);
 
-          return Optional.of(new Post(title, postSlug, timePublished, content));
+          return Optional.of(new Post(title, postSlug, summary, timePublished, content));
         }
         return Optional.empty();
       }

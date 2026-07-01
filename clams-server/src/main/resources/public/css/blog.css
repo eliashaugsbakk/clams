@@ -1,10 +1,10 @@
-/* blog.css - page specific styles */
-
 .intro-text {
-    margin-bottom: 60px;
+    text-align: center;
+    max-width: 600px;
+    margin: 0 auto 60px auto;
 }
 
-section {
+.blog-section {
     margin-bottom: 60px;
 }
 
@@ -52,7 +52,43 @@ section {
     }
 }
 
-/* Specific spacing for blog lists */
-.content-grid li {
-    margin-bottom: 0.8rem;
+.year-accordion {
+    margin-bottom: 1.5rem;
+    cursor: pointer;
+}
+
+.year-toggle {
+    font-size: 1.25rem;
+    font-weight: bold;
+    list-style: none;
+    margin-bottom: 0.5rem;
+}
+
+.year-toggle::-webkit-details-marker {
+    display: none;
+}
+
+.year-toggle:hover {
+    opacity: 0.7;
+}
+
+.post-list {
+    margin-top: 10px;
+    padding-left: 20px;
+    border-left: 2px solid var(--border-color);
+}
+
+.post-list li {
+    margin-bottom: 0.65rem;
+}
+
+.post-list a {
+    font-size: 0.9rem;
+    font-weight: normal;
+}
+
+.featured-desc {
+    font-weight: normal;
+    color: var(--text-color);
+    opacity: 0.85;
 }

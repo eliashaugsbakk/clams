@@ -1,13 +1,6 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="UTF-8">
-    <title>Elias Haugsbakk's Blog</title>
-    <link rel="stylesheet" href="/css/common.css">
-    <link rel="stylesheet" href="/css/blog.css">
-</head>
-<body>
+{% extends "templates/layout.html" %}
 
+{% block content %}
 <main class="main-container">
     <header>
         <h1>Elias Haugsbakk's Blog</h1>
@@ -21,28 +14,18 @@
 
     <div class="content-grid">
         <div class="left-column">
-            <section id="all">
-                <h2>{{ all_posts_title }}</h2>
-                <!-- Tells Pebble to trust your pre-grouped HTML links -->
-                {{ all_posts_by_year | raw }}
+            <section id="all" class="blog-section">
+                <h2>All Posts</h2>
+                {{ all_posts| raw }}
             </section>
         </div>
 
         <div class="right-column">
-            <section id="recent">
-                <h2>Recent</h2>
+            <section id="recent" class="blog-section">
+                <h2>Featured</h2>
                 {{ recent_posts | raw }}
             </section>
         </div>
     </div>
 </main>
-
-<footer>
-    <p>
-        <span class="footer-left"><a href="/">eliashaugsbakk.xyz</a></span>
-        <span class="footer-separator">|</span>
-        <span class="footer-right"><a href="mailto:elias.haugsbakk@gmail.com">elias.haugsbakk@gmail.com</a></span>
-    </p>
-</footer>
-</body>
-</html>
+{% endblock %}

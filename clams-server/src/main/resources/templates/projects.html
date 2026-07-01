@@ -1,13 +1,6 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="UTF-8">
-    <title>Projects - Elias Haugsbakk</title>
-    <link rel="stylesheet" href="/css/common.css">
-    <link rel="stylesheet" href="/css/projects.css">
-</head>
-<body>
+{% extends "templates/layout.html" %}
 
+{% block content %}
 <main class="main-container">
     <header>
         <h1>Projects</h1>
@@ -64,24 +57,14 @@
             <li>
                 <strong>Other Project One</strong> - A short one-line description.
                 <span class="tech-stack-inline">(Bash)</span>
-                <a href="#" class="small-link">GitHub</a>
+                <a href="#">GitHub</a>
             </li>
             <li>
                 <strong>Other Project Two</strong> - A short one-line description.
                 <span class="tech-stack-inline">(Python, PostgreSQL)</span>
-                <a href="#" class="small-link">GitHub</a>
+                <a href="#">GitHub</a>
             </li>
         </ul>
     </section>
 </main>
-
-<footer>
-    <p>
-        <span class="footer-left"><a href="/">eliashaugsbakk.xyz</a></span>
-        <span class="footer-separator">|</span>
-        <span class="footer-right"><a href="mailto:elias.haugsbakk@gmail.com">elias.haugsbakk@gmail.com</a></span>
-    </p>
-</footer>
-
-</body>
-</html>
+{% endblock %}
