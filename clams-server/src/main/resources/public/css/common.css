@@ -1,0 +1,195 @@
+* { box-sizing: border-box; }
+
+:root {
+    --bg-color: #efefeb;
+    --text-color: #373838;
+    --border-color: #ccc;
+    --font-serif: "Times New Roman", serif;
+}
+
+html, body {
+    height: 100%;
+    margin: 0;
+    font-size: 18px;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    font-family: var(--font-serif), serif;
+    line-height: 1.6;
+}
+
+body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.main-container {
+    max-width: 800px;
+    width: 90%;
+    padding: 20px;
+    flex: 1;
+    position: relative;
+}
+
+h1 {
+    text-align: center;
+    margin-top: 40px;
+    margin-bottom: 40px;
+    font-size: 2.5rem;
+}
+
+h2 {
+    font-size: 1.2rem;
+    border-bottom: 1px solid var(--border-color);
+    margin-bottom: 20px;
+    padding-bottom: 5px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.content-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 60px;
+    margin-top: 30px;
+}
+
+.left-column { text-align: right; }
+.right-column { text-align: left; }
+
+ul {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+}
+
+li { margin-bottom: 1rem; }
+
+details {
+    margin-bottom: 1rem;
+    cursor: pointer;
+}
+
+summary {
+    font-weight: bold;
+    list-style: none; /* Removes the default arrow in some browsers */
+}
+
+summary::-webkit-details-marker {
+    display: none; /* Removes the default arrow in Safari/Chrome */
+}
+
+summary:hover {
+    opacity: 0.7;
+}
+
+.tag {
+    display: inline-block;
+    background-color: rgba(0,0,0,0.05);
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-right: 5px;
+    border: 1px solid var(--border-color);
+}
+
+details ul {
+    margin-top: 10px;
+    padding-left: 20px;
+    border-left: 2px solid var(--border-color);
+}
+
+a {
+    color: var(--text-color);
+    text-decoration: underline;
+    font-weight: bold;
+    transition: opacity 0.2s;
+}
+
+a:hover {
+    opacity: 0.7;
+}
+
+footer {
+    padding: 30px 20px;
+    border-top: 1px solid var(--border-color);
+    width: 100%;
+    font-size: 0.9rem;
+}
+
+footer p {
+    margin: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.footer-left {
+    flex: 1;
+    text-align: right;
+    padding-right: 15px;
+}
+
+.footer-right {
+    flex: 1;
+    text-align: left;
+    padding-left: 15px;
+}
+
+.footer-separator {
+    opacity: 0.5;
+}
+
+.intro-text {
+    text-align: center;
+    max-width: 600px;
+    margin: 0 auto 60px auto;
+}
+
+@media (max-width: 600px) {
+    .content-grid {
+        grid-template-columns: 1fr;
+        gap: 40px;
+    }
+    .left-column, .right-column { text-align: center; }
+
+    footer p {
+        flex-direction: column;
+        gap: 10px;
+    }
+    .footer-left, .footer-right {
+        text-align: center;
+        padding: 0;
+    }
+    .footer-separator {
+        display: none;
+    }
+}
+
+/* Subtle Scrollbar Styling */
+::-webkit-scrollbar {
+    width: 10px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--bg-color);
+}
+
+::-webkit-scrollbar-thumb {
+    background-color: #d1d1cd;
+    border-radius: 20px;
+    border: 3px solid var(--bg-color);
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background-color: #bbb;
+}
+
+/* Firefox Support */
+* {
+    scrollbar-width: thin;
+    scrollbar-color: #d1d1cd var(--bg-color);
+}

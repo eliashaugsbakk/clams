@@ -1,0 +1,58 @@
+/* blog.css - page specific styles */
+
+.intro-text {
+    margin-bottom: 60px;
+}
+
+section {
+    margin-bottom: 60px;
+}
+
+.search-form {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+}
+
+.search-form input {
+    font-family: var(--font-serif), serif;
+    padding: 6px 10px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    background: transparent;
+    color: var(--text-color);
+    width: 180px;
+    font-size: 0.8rem;
+}
+
+.search-form button {
+    font-family: var(--font-serif), serif;
+    padding: 6px 12px;
+    background: #e8e8e4;
+    color: var(--text-color);
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 0.8rem;
+}
+
+.search-form button:hover {
+    background: #ddd;
+}
+
+@media (max-width: 850px) {
+    .search-form {
+        position: static;
+        text-align: center;
+        margin-bottom: 40px;
+    }
+    .search-form input {
+        width: 250px;
+    }
+}
+
+/* Specific spacing for blog lists */
+.content-grid li {
+    margin-bottom: 0.8rem;
+}
