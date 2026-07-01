@@ -3,9 +3,14 @@ package no.eliashaugsbakk.clams.server;
 import io.javalin.Javalin;
 import io.javalin.rendering.template.JavalinPebble;
 import no.eliashaugsbakk.clams.server.controller.BlogController;
+import no.eliashaugsbakk.clams.server.repository.SqliteManager;
 
 public class Main {
   void main() {
+    // TODO: Change db storage location to .../share/clams/... and implement custom storage locations
+    SqliteManager dbManager = new SqliteManager("testDb.db");
+    dbManager.init();
+
     BlogController blogController = new BlogController();
 
     var app = Javalin.create(config -> {
@@ -20,6 +25,8 @@ public class Main {
 
       config.routes.get("/blog/{slug}", blogController::handleGetPost);
       config.routes.get("/blog", blogController::handleGetOverview);
+
+      config.events.serverStopped(dbManager::close);
     }).start(7070);
   }
 }
