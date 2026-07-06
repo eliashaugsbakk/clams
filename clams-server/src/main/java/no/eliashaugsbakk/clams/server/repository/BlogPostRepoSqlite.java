@@ -19,9 +19,9 @@ public class BlogPostRepoSqlite implements BlogPostRepo {
   }
 
   @Override
-  public List<PostMetaData> listPostsByPublishedDesc() {
+  public List<PostMetaData> listPostsMetaData() {
     String sql = """
-        SELECT title, slug, published, last_edited
+        SELECT title, slug, summary, published, last_edited
         FROM posts
         ORDER BY published DESC
         """;
@@ -35,13 +35,14 @@ public class BlogPostRepoSqlite implements BlogPostRepo {
       while (resultSet.next()) {
         String title = resultSet.getString("title");
         String slug = resultSet.getString("slug");
+        String summary = resultSet.getString("summary");
 
         Instant published = Instant.parse(resultSet.getString("published"));
 
         String lastEditRaw = resultSet.getString("last_edited");
         Instant lastEdit = (lastEditRaw != null) ? Instant.parse(lastEditRaw) : null;
 
-        posts.add(new PostMetaData(title, slug, published, lastEdit));
+        posts.add(new PostMetaData(title, slug, summary, published, lastEdit));
       }
 
       return posts;
@@ -81,6 +82,42 @@ public class BlogPostRepoSqlite implements BlogPostRepo {
 
     } catch (SQLException e) {
       throw new RepoException("Error fetching full post by slug: " + slug, e);
+    }
+  }
+
+  @Override
+  public List<PostMetaData> searchPostsBody(String query) {
+    String sql = """
+        SELECT title, slug, summary, published, last_edited
+        FROM posts
+        WHERE content LIKE ?
+        ORDER BY published DESC
+        """;
+
+    List<PostMetaData> posts = new ArrayList<>();
+
+    try (Connection conn = manager.getConnection();
+        PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+      String likeParam = "%" + query + "%";
+      stmt.setString(1, likeParam);
+
+      try (ResultSet resultSet = stmt.executeQuery()) {
+        while (resultSet.next()) {
+          String title = resultSet.getString("title");
+          String slug = resultSet.getString("slug");
+          String summary = resultSet.getString("summary");
+          Instant published = Instant.parse(resultSet.getString("published"));
+          Instant lastEdit = Instant.parse(resultSet.getString("last_edited"));
+
+          posts.add(new PostMetaData(title, slug, summary, published, lastEdit));
+        }
+      }
+
+      return posts;
+
+    } catch (SQLException e) {
+      throw new RepoException("Error searching posts for query: " + query, e);
     }
   }
 }

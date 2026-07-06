@@ -4,10 +4,12 @@
 <main class="main-container">
     <header>
         <h1>Elias Haugsbakk's Blog</h1>
-        <p class="intro-text">This is the home page for my blog. The list of blog posts is a diverse collection of some of my writings; if you're just browsing, this might be a good place to start.</p>
+        <p class="intro-text">This is the home page for my blog. The featured list is a diverse collection of some
+            of my writings; if you're just browsing, this might be a good place to start.</p>
 
         <form action="/blog" method="GET" class="search-form">
-            <input type="text" name="search" value="{{ search_value }}" placeholder="Search posts..." aria-label="Search blog posts">
+            <input type="text" name="search" value="{{ search_value }}" placeholder="Search posts..."
+                   aria-label="Search blog posts">
             <button type="submit">Search</button>
         </form>
     </header>
@@ -16,14 +18,29 @@
         <div class="left-column">
             <section id="all" class="blog-section">
                 <h2>All Posts</h2>
-                {{ all_posts| raw }}
+                {% for group in posts_by_year %}
+                <details class="year-accordion" {% if loop.first %}open{% endif %}>
+                    <summary class="year-toggle">{{ group.key }}</summary>
+                    <ul class="post-list">
+                        {% for post in group.value %}
+                        <li><a href="/blog/{{ post.slug }}">{{ post.title }}</a></li>
+                        {% endfor %}
+                    </ul>
+                </details>
+                {% endfor %}
             </section>
         </div>
 
         <div class="right-column">
             <section id="recent" class="blog-section">
                 <h2>Featured</h2>
-                {{ recent_posts | raw }}
+                <ul class="recent-list">
+                    {% for post in featured_posts %}
+                    <li>
+                        <a href="/blog/{{ post.slug }}">{{ post.title }}</a> <span class="featured-desc">-- {{ post.summary }}</span>
+                    </li>
+                    {% endfor %}
+                </ul>
             </section>
         </div>
     </div>

@@ -1,0 +1,41 @@
+{% extends "templates/layout.html" %}
+
+{% block content %}
+<main class="main-container">
+    <a href="/blog" class="back-link-top">&larr; back</a>
+    <header>
+        <h1>Elias Haugsbakk's Blog</h1>
+        <p class="intro-text">For search: "<strong>{{ search_term }}</strong>" -- Found {{ results_count }} matching posts</p>
+
+        <form action="/blog" method="GET" class="search-form">
+            <input type="text" name="search" value="{{ search_term }}" placeholder="Search posts..." aria-label="Search blog posts">
+            <button type="submit">Search</button>
+        </form>
+    </header>
+
+    <div class="search-results-container">
+        {% if results is empty %}
+            <div class="no-results">
+                {% if search_term is empty %}
+                    <p>Please enter a search term to search the blog posts. Or <a href="/blog">go back to all posts</a>.</p>
+                {% else %}
+                    <p>Found no posts matching <strong>"{{ search_term }}"</strong>. <br>
+                        <a href="/blog">Go back to all posts</a>.</p>
+                {% endif %}
+            </div>
+        {% else %}
+            <ul class="search-results-list">
+                {% for post in results %}
+                    <li class="search-result-item">
+                        <span class="search-result-date">{{ post.formattedDate }}</span>
+                        <a href="/blog/{{ post.slug }}">{{ post.title }}</a>
+                        {% if post.summary is not empty %}
+                            <span class="search-result-summary">-- {{ post.summary }}</span>
+                        {% endif %}
+                    </li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+    </div>
+</main>
+{% endblock %}

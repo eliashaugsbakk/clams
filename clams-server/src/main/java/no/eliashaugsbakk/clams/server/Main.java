@@ -27,8 +27,8 @@ public class Main {
       config.routes.get("/projects", ctx -> ctx.render("templates/projects.html",
           Map.of("page_title", "Projects - Elias Haugsbakk", "page_css", "projects")));
 
+      config.routes.get("/blog", blogController::handleBlogRequest);
       config.routes.get("/blog/{slug}", blogController::handleGetPost);
-      config.routes.get("/blog", blogController::handleGetOverview);
 
       config.events.serverStopped(dbManager::close);
     }).start(7070);

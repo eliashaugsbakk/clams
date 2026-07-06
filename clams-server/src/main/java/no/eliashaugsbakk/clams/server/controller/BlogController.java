@@ -3,86 +3,123 @@ package no.eliashaugsbakk.clams.server.controller;
 import io.javalin.http.Context;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
+import java.util.stream.Collectors;
+import no.eliashaugsbakk.clams.server.model.Post;
+import no.eliashaugsbakk.clams.server.model.PostMetaData;
 import no.eliashaugsbakk.clams.server.repository.BlogPostRepo;
 import no.eliashaugsbakk.clams.server.repository.BlogPostRepoSqlite;
 import no.eliashaugsbakk.clams.server.repository.SqliteManager;
+import no.eliashaugsbakk.clams.server.service.BlogSearchService;
 import no.eliashaugsbakk.clams.server.utils.MarkdownConverter;
 
 public class BlogController {
+  private static final ZoneId OSLO_ZONE = ZoneId.of("Europe/Oslo");
+  private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("MMM dd, yyyy");
+
   private final BlogPostRepo blogPostRepo;
+  private final BlogSearchService blogSearchService;
+
+  public record SearchResultItem(String title, String slug, String summary, String formattedDate) {}
 
   public BlogController(SqliteManager sqliteManager) {
     this.blogPostRepo = new BlogPostRepoSqlite(sqliteManager);
+    this.blogSearchService = new BlogSearchService(blogPostRepo);
   }
 
   public void handleGetPost(Context ctx) {
-    blogPostRepo.getPost(ctx.pathParam("slug")).ifPresentOrElse(post -> ctx.render(
-        "templates/post.html",
-        Map.of("page_title", post.title() + " -- Elias Haugsbakk",
-            "page_css", "post",
-            "title", post.title(),
-            "published_date", post.timePublished().atZone(ZoneId.of("Europe/Oslo")).format(
-                DateTimeFormatter.ofPattern("MMM dd, yyyy")),
-            "author", "by Elias Haugsbakk",
-            "content", MarkdownConverter.convertToHtml(post.content()),
-            "back_to_index", "<a href=\"/blog/\">back to all posts</a>"
-        )), () -> ctx.status(404));
+    var postOpt = blogPostRepo.getPost(ctx.pathParam("slug"));
+
+    if (postOpt.isEmpty()) {
+      ctx.status(404);
+      return;
+    }
+
+    Post post = postOpt.get();
+    String formattedDate = post.timePublished().atZone(OSLO_ZONE).format(DATE_FORMATTER);
+
+    ctx.render("templates/post.html", Map.of(
+        "page_title", post.title() + " -- Elias Haugsbakk",
+        "page_css", "post",
+        "title", post.title(),
+        "published_date", formattedDate,
+        "author", "by Elias Haugsbakk",
+        "content", MarkdownConverter.convertToHtml(post.content()),
+        "back_to_index", "<a href=\"/blog/\">back to all posts</a>"
+    ));
   }
 
-  public void handleGetOverview(Context ctx) {
-    StringBuilder allPosts = new StringBuilder();
-
-    int prevYear = blogPostRepo.listPostsByPublishedDesc().getFirst().published()
-        .atZone(ZoneId.of("Europe/Oslo")).getYear();
-
-    allPosts.append(String.format("""
-        <details class="year-accordion" open>
-          <summary class="year-toggle">%d</summary>
-          <ul class="post-list">
-        """, prevYear));
-
-    for (var post : blogPostRepo.listPostsByPublishedDesc()) {
-      int year = post.published().atZone(ZoneId.of("Europe/Oslo")).getYear();
-      if (year == prevYear) {
-        allPosts.append(String.format("""
-                <li><a href="/blog/%s">%s</a></li>
-            """, post.slug(), post.title()));
-      } else {
-        allPosts.append(String.format("""
-                </ul>
-              </details>
-              <details class="year-accordion">
-                <summary class="year-toggle">%d</summary>
-                <ul class="post-list">
-                  <li><a href="/blog/%s">%s</a></li>
-            """, year, post.slug(), post.title()));
-        prevYear = year;
-      }
+  public void handleBlogRequest(Context ctx) {
+    String searchTerm = ctx.queryParam("search");
+    if (searchTerm != null) {
+      handleSearch(ctx, searchTerm);
+    } else {
+      handleBlogIndex(ctx);
     }
-    allPosts.append("""
-          </ul>
-        </details>
-        """);
+  }
 
+  private void handleBlogIndex(Context ctx) {
 
-    var featuredSlugs = List.of("test-page", "another-one");
+    List<PostMetaData> allPosts = blogPostRepo.listPostsMetaData();
+    Map<Integer, List<PostMetaData>> postsByYear = groupPostsByYear(allPosts);
 
-    StringBuilder featuredPosts = new StringBuilder();
-    featuredPosts.append("<ul class=\"recent-list\">");
+    // Manually list featured posts
+    var featuredSlugs = List.of(
+        ""
+    );
 
+    List<Post> featuredPosts = new ArrayList<>();
     for (String slug : featuredSlugs) {
-      blogPostRepo.getPost(slug).ifPresent(post -> featuredPosts.append(String.format("""
-          <li>
-            <a href="/blog/%s">%s</a> <span class="featured-desc">-- %s</span>
-          </li>
-          """, post.slug(), post.title(), post.summary())));
+      blogPostRepo.getPost(slug).ifPresent(featuredPosts::add);
     }
-    featuredPosts.append("</ul>");
 
     ctx.render("templates/blog.html",
-        Map.of("page_title", "Elias Haugsbakk's Blog", "page_css", "blog", "all_posts",
-            allPosts.toString(), "recent_posts", featuredPosts.toString()));
+        Map.of(
+            "page_title", "Elias Haugsbakk's Blog",
+            "page_css", "blog",
+            "posts_by_year", postsByYear,
+            "featured_posts", featuredPosts,
+            "search_value", ""
+        ));
+  }
+
+  private void handleSearch(Context ctx, String searchTerm) {
+    String query = searchTerm.trim();
+    List<PostMetaData> results = query.isEmpty() ? List.of() : blogSearchService.searchPosts(query);
+
+    List<SearchResultItem> resultItems = results.stream()
+        .map(post -> new SearchResultItem(
+            post.title(),
+            post.slug(),
+            post.summary() != null ? post.summary() : "",
+            post.timePublished().atZone(OSLO_ZONE).format(DATE_FORMATTER)
+        ))
+        .toList();
+
+    ctx.render("templates/blog-search.html",
+        Map.of(
+            "page_title", "Search Results -- Elias Haugsbakk",
+            "page_css", "blog",
+            "search_term", query,
+            "results", resultItems,
+            "results_count", resultItems.size()
+        ));
+  }
+
+  private Map<Integer, List<PostMetaData>> groupPostsByYear(List<PostMetaData> posts) {
+    Map<Integer, List<PostMetaData>> unsortedGroups = posts.stream()
+        .collect(Collectors.groupingBy(
+            post -> post.timePublished().atZone(OSLO_ZONE).getYear(),
+            Collectors.toList()
+        ));
+
+    Map<Integer, List<PostMetaData>> sortedGroups = new TreeMap<>(Comparator.reverseOrder());
+    sortedGroups.putAll(unsortedGroups);
+
+    return sortedGroups;
   }
 }
