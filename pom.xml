@@ -21,8 +21,8 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>no.eliashaugsbakk.clams-cms</groupId>
-    <artifactId>clams-cms</artifactId>
+    <groupId>no.eliashaugsbakk.clams</groupId>
+    <artifactId>clams</artifactId>
     <version>0.1.0-SNAPSHOT</version>
     <packaging>pom</packaging>
     <modules>
@@ -31,9 +31,9 @@
     </modules>
 
     <scm>
-        <connection>scm:git:https://github.com/eliashaugsbakk/clams-cms.git</connection>
-        <developerConnection>scm:git:git@github.com:eliashaugsbakk/clams-cms.git</developerConnection>
-        <url>https://github.com/eliashaugsbakk/clams-cms</url>
+        <connection>scm:git:https://github.com/eliashaugsbakk/clams.git</connection>
+        <developerConnection>scm:git:git@github.com:eliashaugsbakk/clams.git</developerConnection>
+        <url>https://github.com/eliashaugsbakk/clams</url>
         <tag>HEAD</tag>
     </scm>
 
