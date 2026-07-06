@@ -2,14 +2,18 @@ package no.eliashaugsbakk.clams.server;
 
 import io.javalin.Javalin;
 import io.javalin.rendering.template.JavalinPebble;
+import java.nio.file.Path;
 import java.util.Map;
+import no.eliashaugsbakk.clams.server.config.AppConfig;
 import no.eliashaugsbakk.clams.server.controller.BlogController;
 import no.eliashaugsbakk.clams.server.repository.SqliteManager;
 
 public class Main {
   void main() {
-    // TODO: Change db storage location to .../share/clams/... and implement custom storage locations
-    SqliteManager dbManager = new SqliteManager("testDb.db");
+    AppConfig appConfig = new AppConfig();
+    appConfig.loadConfig();
+    String dbUrl = Path.of(appConfig.getStorageLocation()).resolve("posts.db").toString();
+    SqliteManager dbManager = new SqliteManager(dbUrl);
     dbManager.init();
 
     BlogController blogController = new BlogController(dbManager);
