@@ -33,7 +33,8 @@ public class SqliteManager implements AutoCloseable {
             content TEXT,
             summary TEXT,
             published TEXT NOT NULL,
-            last_edited TEXT
+            last_edited TEXT,
+            is_published BOOLEAN
         );
         """;
 

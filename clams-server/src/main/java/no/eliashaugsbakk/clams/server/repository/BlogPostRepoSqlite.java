@@ -21,7 +21,7 @@ public class BlogPostRepoSqlite implements BlogPostRepo {
   @Override
   public List<PostMetaData> listPostsMetaData() {
     String sql = """
-        SELECT title, slug, summary, published, last_edited
+        SELECT title, slug, summary, published, last_edited, is_published
         FROM posts
         ORDER BY published DESC
         """;
@@ -36,13 +36,12 @@ public class BlogPostRepoSqlite implements BlogPostRepo {
         String title = resultSet.getString("title");
         String slug = resultSet.getString("slug");
         String summary = resultSet.getString("summary");
-
         Instant published = Instant.parse(resultSet.getString("published"));
-
         String lastEditRaw = resultSet.getString("last_edited");
         Instant lastEdit = (lastEditRaw != null) ? Instant.parse(lastEditRaw) : null;
+        boolean isPublished = resultSet.getBoolean("is_published");
 
-        posts.add(new PostMetaData(title, slug, summary, published, lastEdit));
+        posts.add(new PostMetaData(title, slug, summary, published, lastEdit, isPublished));
       }
 
       return posts;
@@ -55,7 +54,7 @@ public class BlogPostRepoSqlite implements BlogPostRepo {
   @Override
   public Optional<Post> getPost(String slug) {
     String sql = """
-        SELECT title, slug, summary, content, published
+        SELECT title, slug, summary, content, published, is_published
         FROM posts
         WHERE slug = ?
         """;
@@ -71,11 +70,10 @@ public class BlogPostRepoSqlite implements BlogPostRepo {
           String postSlug = resultSet.getString("slug");
           String summary = resultSet.getString("summary");
           String content = resultSet.getString("content");
+          Instant published = Instant.parse(resultSet.getString("published"));
+          boolean isPublished = resultSet.getBoolean("is_published");
 
-          String publishedRaw = resultSet.getString("published");
-          Instant timePublished = Instant.parse(publishedRaw);
-
-          return Optional.of(new Post(title, postSlug, summary, timePublished, content));
+          return Optional.of(new Post(title, postSlug, summary, published, content, isPublished));
         }
         return Optional.empty();
       }
@@ -88,7 +86,7 @@ public class BlogPostRepoSqlite implements BlogPostRepo {
   @Override
   public List<PostMetaData> searchPostsBody(String query) {
     String sql = """
-        SELECT title, slug, summary, published, last_edited
+        SELECT title, slug, summary, published, last_edited, is_published
         FROM posts
         WHERE content LIKE ?
         ORDER BY published DESC
@@ -109,8 +107,9 @@ public class BlogPostRepoSqlite implements BlogPostRepo {
           String summary = resultSet.getString("summary");
           Instant published = Instant.parse(resultSet.getString("published"));
           Instant lastEdit = Instant.parse(resultSet.getString("last_edited"));
+          boolean isPublished = resultSet.getBoolean("is_published");
 
-          posts.add(new PostMetaData(title, slug, summary, published, lastEdit));
+          posts.add(new PostMetaData(title, slug, summary, published, lastEdit, isPublished));
         }
       }
 

@@ -40,6 +40,12 @@ public class BlogController {
     }
 
     Post post = postOpt.get();
+
+    if (!post.isPublished()) {
+      ctx.status(404);
+      return;
+    }
+
     String formattedDate = post.timePublished().atZone(OSLO_ZONE).format(DATE_FORMATTER);
 
     ctx.render("templates/post.html", Map.of(
@@ -63,8 +69,9 @@ public class BlogController {
   }
 
   private void handleBlogIndex(Context ctx) {
-
-    List<PostMetaData> allPosts = blogPostRepo.listPostsMetaData();
+    List<PostMetaData> allPosts = blogPostRepo.listPostsMetaData().stream()
+        .filter(PostMetaData::isPublished)
+        .toList();
     Map<Integer, List<PostMetaData>> postsByYear = groupPostsByYear(allPosts);
 
     // Manually list featured posts
@@ -92,6 +99,7 @@ public class BlogController {
     List<PostMetaData> results = query.isEmpty() ? List.of() : blogSearchService.searchPosts(query);
 
     List<SearchResultItem> resultItems = results.stream()
+        .filter(PostMetaData::isPublished)
         .map(post -> new SearchResultItem(
             post.title(),
             post.slug(),

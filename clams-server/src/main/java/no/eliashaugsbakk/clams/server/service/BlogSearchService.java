@@ -36,11 +36,6 @@ public class BlogSearchService {
 
     bodyResults.forEach(post -> searchRanking.merge(post, bodyValue, Integer::sum));
 
-    for (var item : searchRanking.entrySet()) {
-      IO.println(item.getKey());
-      IO.println(item.getValue());
-    }
-
     return searchRanking.entrySet().stream()
         .sorted((e1, e2) -> Integer.compare(e2.getValue(), e1.getValue()))
         .map(Map.Entry::getKey)
