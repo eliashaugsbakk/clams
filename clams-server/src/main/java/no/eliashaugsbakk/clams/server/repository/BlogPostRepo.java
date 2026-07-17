@@ -9,4 +9,9 @@ public interface BlogPostRepo {
   List<PostMetaData> listPostsMetaData();
   Optional<Post> getPost(String slug);
   List<PostMetaData> searchPostsBody(String query);
+
+  void addBlogPost(Post post);
+  void updateBlogPost(Post post);
+  void deleteBlogPost(String slug);
+  boolean existsPostBySlug(String slug);
 }

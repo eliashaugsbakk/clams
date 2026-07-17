@@ -74,7 +74,6 @@ public class BlogController {
         .toList();
     Map<Integer, List<PostMetaData>> postsByYear = groupPostsByYear(allPosts);
 
-    // Manually list featured posts
     var featuredSlugs = List.of(
         ""
     );

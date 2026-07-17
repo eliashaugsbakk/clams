@@ -59,12 +59,22 @@ public class SqliteManager implements AutoCloseable {
         );
         """;
 
+    String images = """
+        CREATE TABLE IF NOT EXISTS images (
+            uuid TEXT PRIMARY KEY,
+            original_filename TEXT NOT NULL,
+            extension TEXT,
+            time_uploaded TEXT NOT NULL
+        );
+        """;
+
     try (Connection conn = dataSource.getConnection(); Statement stmt = conn.createStatement()) {
 
       stmt.execute(posts);
       stmt.execute(idxPublished);
       stmt.execute(tags);
       stmt.execute(post_tags);
+      stmt.execute(images);
 
     } catch (SQLException e) {
       throw new RepoException("Error while initializing database", e);

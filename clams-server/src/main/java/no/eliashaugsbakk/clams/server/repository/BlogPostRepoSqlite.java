@@ -119,4 +119,96 @@ public class BlogPostRepoSqlite implements BlogPostRepo {
       throw new RepoException("Error searching posts for query: " + query, e);
     }
   }
+
+  @Override
+  public void addBlogPost(Post post) {
+    String sql = """
+        INSERT INTO posts (slug, title, content, summary, published, is_published)
+        VALUES (?, ?, ?, ?, ?, ?)
+        """;
+
+    try (Connection conn = manager.getConnection();
+        PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+      stmt.setString(1, post.slug());
+      stmt.setString(2, post.title());
+      stmt.setString(3, post.content());
+      stmt.setString(4, post.summary());
+      stmt.setString(5, post.timePublished().toString());
+      stmt.setBoolean(6, post.isPublished());
+
+      stmt.executeUpdate();
+
+    } catch (SQLException e) {
+      throw new RepoException("Error adding blog post: " + post.slug(), e);
+    }
+  }
+
+  @Override
+  public void updateBlogPost(Post post) {
+    String sql = """
+        UPDATE posts
+        SET title = ?, content = ?, summary = ?, published = ?, last_edited = ?, is_published = ?
+        WHERE slug = ?
+        """;
+
+    try (Connection conn = manager.getConnection();
+        PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+      stmt.setString(1, post.title());
+      stmt.setString(2, post.content());
+      stmt.setString(3, post.summary());
+      stmt.setString(4, post.timePublished().toString());
+      stmt.setString(5, Instant.now().toString());
+      stmt.setBoolean(6, post.isPublished());
+      stmt.setString(7, post.slug());
+
+      stmt.executeUpdate();
+
+    } catch (SQLException e) {
+      throw new RepoException("Error updating blog post: " + post.slug(), e);
+    }
+  }
+
+  @Override
+  public void deleteBlogPost(String slug) {
+    String sql = """
+        DELETE FROM posts
+        WHERE slug = ?
+        """;
+
+    try (Connection conn = manager.getConnection();
+        PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+      stmt.setString(1, slug);
+
+      stmt.executeUpdate();
+
+    } catch (SQLException e) {
+      throw new RepoException("Error deleting blog post: " + slug, e);
+    }
+  }
+
+  @Override
+  public boolean existsPostBySlug(String slug) {
+    String sql = """
+        SELECT 1
+        FROM posts
+        WHERE slug = ?
+        LIMIT 1
+        """;
+
+    try (Connection conn = manager.getConnection();
+        PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+      stmt.setString(1, slug);
+
+      try (ResultSet resultSet = stmt.executeQuery()) {
+        return resultSet.next();
+      }
+
+    } catch (SQLException e) {
+      throw new RepoException("Error checking existence of post by slug: " + slug, e);
+    }
+  }
 }

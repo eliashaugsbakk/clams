@@ -54,6 +54,6 @@ public class AppConfig {
   }
 
   public String getStorageLocation() {
-    return properties.getProperty("storage_location", "./data/");
+    return properties.getProperty("storage_location", "./data");
   }
 }

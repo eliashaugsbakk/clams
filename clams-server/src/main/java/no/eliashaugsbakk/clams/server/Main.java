@@ -1,40 +1,61 @@
 package no.eliashaugsbakk.clams.server;
 
+import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException;
 import io.javalin.Javalin;
 import io.javalin.rendering.template.JavalinPebble;
-import java.nio.file.Path;
 import java.util.Map;
-import no.eliashaugsbakk.clams.server.config.AppConfig;
-import no.eliashaugsbakk.clams.server.controller.BlogController;
-import no.eliashaugsbakk.clams.server.repository.SqliteManager;
+import no.eliashaugsbakk.clams.server.config.AppContext;
+import no.eliashaugsbakk.clams.server.config.AppRoutes;
 
 public class Main {
   void main() {
-    AppConfig appConfig = new AppConfig();
-    appConfig.loadConfig();
-    String dbUrl = Path.of(appConfig.getStorageLocation()).resolve("posts.db").toString();
-    SqliteManager dbManager = new SqliteManager(dbUrl);
-    dbManager.init();
+    // Initialize dependencies
+    AppContext context = new AppContext();
 
-    BlogController blogController = new BlogController(dbManager);
+    try {
+      Javalin.create(config -> {
+        config.staticFiles.add("/public");
+        config.fileRenderer(new JavalinPebble());
 
-    var app = Javalin.create(config -> {
-      config.staticFiles.add("/public");
-      config.fileRenderer(new JavalinPebble());
+        config.routes.error(404, ctx -> {
+          if (ctx.path().startsWith("/api")) {
+            ctx.json(Map.of(
+                "error", "Not Found",
+                "message", "The requested API endpoint does not exist."
+            ));
+          } else {
+            ctx.render("templates/404.html", Map.of(
+                "page_title", "404 - Page Not Found",
+                "page_css", "404"
+            ));
+          }
+        });
 
-      config.routes.error(404, ctx -> ctx.render("templates/404.html",
-          Map.of("page_title", "404 - Page Not Found", "page_css", "404")));
+        config.routes.exception(UnrecognizedPropertyException.class, (e, ctx) -> ctx.status(400).json(Map.of(
+            "error", "Bad Request",
+            "message", "Unrecognized property: '" + e.getPropertyName() + "'"
+        )));
 
-      config.routes.get("/", ctx -> ctx.redirect("/home"));
-      config.routes.get("/home", ctx -> ctx.render("templates/home.html",
-          Map.of("page_title", "Elias Haugsbakk", "page_css", "home")));
-      config.routes.get("/projects", ctx -> ctx.render("templates/projects.html",
-          Map.of("page_title", "Projects - Elias Haugsbakk", "page_css", "projects")));
+        config.routes.exception(Exception.class, (e, ctx) -> {
+          e.printStackTrace();
+          ctx.status(500);
 
-      config.routes.get("/blog", blogController::handleBlogRequest);
-      config.routes.get("/blog/{slug}", blogController::handleGetPost);
+          if (ctx.path().startsWith("/api")) {
+            ctx.json(Map.of("error", "Internal Server Error"));
+          } else {
+            ctx.result("Internal Server Error. Please try again later.");
+          }
+        });
 
-      config.events.serverStopped(dbManager::close);
-    }).start(7070);
+        config.routes.apiBuilder(new AppRoutes(context));
+
+        config.events.serverStopped(context::close);
+      }).start(7070);
+
+
+    } catch (Exception e) {
+      context.close();
+      throw e;
+    }
   }
 }
