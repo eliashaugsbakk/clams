@@ -63,6 +63,16 @@ h2 {
 
 .main-container li { margin-bottom: 1rem; }
 
+.content-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 60px;
+    margin-top: 30px;
+}
+
+.left-column { text-align: right; }
+.right-column { text-align: left; }
+
 a {
     color: var(--text-color);
     text-decoration: underline;
@@ -116,6 +126,11 @@ footer p {
     .footer-separator {
         display: none;
     }
+    .content-grid {
+        grid-template-columns: 1fr;
+        gap: 40px;
+    }
+    .left-column, .right-column { text-align: center; }
 }
 
 ::-webkit-scrollbar {
