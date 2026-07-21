@@ -6,7 +6,10 @@
 }
 
 .left-column { text-align: right; }
-.right-column { text-align: left; }
+.right-column {
+    text-align: left;
+    margin-top: 1.5rem;
+}
 
 .profile-img {
     border: 3px solid var(--text-color);
@@ -26,12 +29,23 @@
     word-wrap: break-word;
 }
 
+.study-line {
+    margin-top: 0.5rem;
+    font-size: 0.95rem;
+    opacity: 0.8;
+}
+
 @media (max-width: 768px) {
     .content-grid {
         grid-template-columns: 1fr;
         gap: 40px;
     }
     .left-column, .right-column { text-align: center; }
+
+    .right-column {
+        margin-top: 0;
+        display: block;
+    }
 
     .profile-img {
         margin: 0 auto 20px auto;
