@@ -124,8 +124,8 @@ public class ArticlesRepoSqlite implements ArticlesRepo {
   @Override
   public void addArticle(Article article) {
     String sql = """
-        INSERT INTO articles (slug, title, content, summary, published, is_published)
-        VALUES (?, ?, ?, ?, ?, ?)
+        INSERT INTO articles (slug, title, content, summary, published, last_edited, is_published)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
         """;
 
     try (Connection conn = manager.getConnection();
@@ -136,7 +136,8 @@ public class ArticlesRepoSqlite implements ArticlesRepo {
       stmt.setString(3, article.content());
       stmt.setString(4, article.summary());
       stmt.setString(5, article.timePublished().toString());
-      stmt.setBoolean(6, article.isPublished());
+      stmt.setString(6, article.timePublished().toString());
+      stmt.setBoolean(7, article.isPublished());
 
       stmt.executeUpdate();
 
