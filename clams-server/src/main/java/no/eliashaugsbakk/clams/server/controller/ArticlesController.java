@@ -51,7 +51,6 @@ public class ArticlesController {
     ctx.render("templates/article.html", Map.of(
         "page_title", article.title() + " -- Elias Haugsbakk",
         "page_css", "article",
-        "title", article.title(),
         "published_date", formattedDate,
         "author", "by Elias Haugsbakk",
         "content", MarkdownConverter.convertToHtml(article.content()),
