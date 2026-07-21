@@ -10,7 +10,7 @@
         <form action="/articles" method="GET" class="search-form">
             <input type="text" name="search" value="{{ search_value }}" placeholder="Search articles..."
                    aria-label="Search articles">
-            <button type="submit">Search</button>
+            <button type="submit" class="pill-button">Search</button>
         </form>
     </header>
 
@@ -21,7 +21,14 @@
             <summary class="year-toggle">{{ group.key }}</summary>
             <ul class="article-list">
                 {% for article in group.value %}
-                <li><a href="/articles/{{ article.slug }}">{{ article.title }}</a></li>
+                <li class="article-list-item">
+                    <span class="article-date">{{ article.formattedDate }}</span>
+                    <a href="/articles/{{ article.slug }}">{{ article.title }}</a>
+                    {% if article.summary is not empty %}
+                    <br>
+                    <span class="search-result-summary">-- {{ article.summary }}</span>
+                    {% endif %}
+                </li>
                 {% endfor %}
             </ul>
         </details>

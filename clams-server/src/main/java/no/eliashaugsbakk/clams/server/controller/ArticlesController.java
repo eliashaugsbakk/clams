@@ -24,7 +24,7 @@ public class ArticlesController {
   private final ArticlesRepo articlesRepo;
   private final ArticlesSearchService articlesSearchService;
 
-  public record SearchResultItem(String title, String slug, String summary, String formattedDate) {}
+  public record ArticleItem(String title, String slug, String summary, String formattedDate, int year) {}
 
   public ArticlesController(SqliteManager sqliteManager) {
     this.articlesRepo = new ArticlesRepoSqlite(sqliteManager);
@@ -58,7 +58,7 @@ public class ArticlesController {
     ));
   }
 
-  public void handleArticlesRequest(Context ctx) {
+  public void handleGetArticles(Context ctx) {
     String searchTerm = ctx.queryParam("search");
     if (searchTerm != null) {
       handleSearch(ctx, searchTerm);
@@ -71,23 +71,28 @@ public class ArticlesController {
     List<ArticleMetaData> allArticles = articlesRepo.listArticlesMetaData().stream()
         .filter(ArticleMetaData::isPublished)
         .toList();
+
     Map<Integer, List<ArticleMetaData>> articlesByYear = groupArticlesByYear(allArticles);
 
-    var featuredSlugs = List.of(
-        ""
-    );
-
-    List<Article> featuredArticles = new ArrayList<>();
-    for (String slug : featuredSlugs) {
-      articlesRepo.getArticle(slug).ifPresent(featuredArticles::add);
-    }
+    Map<Integer, List<ArticleItem>> articleItemsByYear = articlesByYear.entrySet().stream()
+        .collect(Collectors.toMap(
+            Map.Entry::getKey,
+            entry -> entry.getValue().stream()
+                .map(article -> new ArticleItem(
+                    article.title(),
+                    article.slug(),
+                    article.summary() != null ? article.summary() : "",
+                    article.timePublished().atZone(OSLO_ZONE).format(DATE_FORMATTER),
+                    article.timePublished().atZone(OSLO_ZONE).getYear()
+                ))
+                .toList()
+        ));
 
     ctx.render("templates/articles.html",
         Map.of(
             "page_title", "My articles",
             "page_css", "articles",
-            "articles_by_year", articlesByYear,
-            "featured_articles", featuredArticles,
+            "articles_by_year", articleItemsByYear,
             "search_value", ""
         ));
   }
@@ -96,13 +101,14 @@ public class ArticlesController {
     String query = searchTerm.trim();
     List<ArticleMetaData> results = query.isEmpty() ? List.of() : articlesSearchService.searchArticles(query);
 
-    List<SearchResultItem> resultItems = results.stream()
+    List<ArticleItem> resultItems = results.stream()
         .filter(ArticleMetaData::isPublished)
-        .map(article -> new SearchResultItem(
+        .map(article -> new ArticleItem(
             article.title(),
             article.slug(),
             article.summary() != null ? article.summary() : "",
-            article.timePublished().atZone(OSLO_ZONE).format(DATE_FORMATTER)
+            article.timePublished().atZone(OSLO_ZONE).format(DATE_FORMATTER),
+            article.timePublished().atZone(OSLO_ZONE).getYear()
         ))
         .toList();
 

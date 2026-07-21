@@ -15,7 +15,7 @@ public class ArticleController {
     this.slugService = slugService;
   }
 
-  public void handleArticleArticle(Context ctx) {
+  public void handlePostArticle(Context ctx) {
     ArticleDTO newArticle = ctx.bodyAsClass(ArticleDTO.class);
     articlesRepo.addArticle(new Article(newArticle, slugService.toSlug(newArticle.title())));
   }

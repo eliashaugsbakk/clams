@@ -44,15 +44,7 @@
 
 .project-actions a {
     font-size: 0.85rem;
-    text-decoration: none;
-    border: 1px solid var(--border-color);
     padding: 0.2rem 0.6rem;
-    border-radius: 4px;
-    background: #e8e8e4;
-}
-
-.project-actions a:hover {
-    background: #ddd;
 }
 
 @media (max-width: 768px) {

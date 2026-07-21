@@ -28,7 +28,7 @@ public class MediaController {
     this.appConfig = appConfig;
   }
 
-  public void handleArticleMedia(Context ctx) {
+  public void handlePostMedia(Context ctx) {
     UploadedFile file = ctx.uploadedFile("image");
 
     if (file == null) {

@@ -9,7 +9,7 @@
 
         <form action="/articles" method="GET" class="search-form">
             <input type="text" name="search" value="{{ search_term }}" placeholder="Search articles..." aria-label="Search articles">
-            <button type="submit">Search</button>
+            <button type="submit" class="pill-button">Search</button>
         </form>
     </header>
 
@@ -27,9 +27,10 @@
             <ul class="search-results-list">
                 {% for article in results %}
                     <li class="search-result-item">
-                        <span class="search-result-date">{{ article.formattedDate }}</span>
+                        <span class="article-date">{{ article.formattedDate }}</span>
                         <a href="/articles/{{ article.slug }}">{{ article.title }}</a>
                         {% if article.summary is not empty %}
+                            <br>
                             <span class="search-result-summary">-- {{ article.summary }}</span>
                         {% endif %}
                     </li>
