@@ -47,10 +47,22 @@ public class SqliteManager implements AutoCloseable {
         );
         """;
 
+    String projects = """
+        CREATE TABLE IF NOT EXISTS projects (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL,
+            read_more_url TEXT,
+            git_url TEXT,
+            git_hub_url TEXT,
+            description TEXT
+        );
+        """;
+
     try (Connection conn = dataSource.getConnection(); Statement stmt = conn.createStatement()) {
 
       stmt.execute(posts);
       stmt.execute(images);
+      stmt.execute(projects);
 
     } catch (SQLException e) {
       throw new RepoException("Error while initializing database", e);

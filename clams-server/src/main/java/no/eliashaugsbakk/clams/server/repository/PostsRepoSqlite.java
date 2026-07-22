@@ -187,7 +187,7 @@ public class PostsRepoSqlite implements PostsRepo {
       stmt.executeUpdate();
 
     } catch (SQLException e) {
-      throw new RepoException("Error deleting posts post: " + slug, e);
+      throw new RepoException("Error deleting post " + slug + ": ", e);
     }
   }
 

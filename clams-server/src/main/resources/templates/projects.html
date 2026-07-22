@@ -9,41 +9,25 @@
 
     <section class="projects-category">
         <ul class="project-list">
+            {% for project in projects %}
             <li class="project-item">
                 <div class="project-meta">
-                    <h3>Project One Name</h3>
-                    <p>Short project description / introduction.</p>
+                    <h3>{{ project.name }}</h3>
+                    <p>{{ project.description }}</p>
                 </div>
                 <div class="project-actions">
-                    <a href="#" class="pill-button">Read More</a>
-                    <a href="#" class="pill-button">Self-Hosted Git</a>
-                    <a href="#" class="pill-button">GitHub</a>
+                    {% if project.readMoreUrl %}
+                    <a href="{{ project.readMoreUrl }}" class="pill-button">Read More</a>
+                    {% endif %}
+                    {% if project.gitUrl %}
+                    <a href="{{ project.gitUrl }}" class="pill-button">Self-Hosted Git</a>
+                    {% endif %}
+                    {% if project.gitHubUrl %}
+                    <a href="{{ project.gitHubUrl }}" class="pill-button">GitHub</a>
+                    {% endif %}
                 </div>
             </li>
-
-            <li class="project-item">
-                <div class="project-meta">
-                    <h3>Project Two Name</h3>
-                    <p>Short project description / introduction.</p>
-                </div>
-                <div class="project-actions">
-                    <a href="#" class="pill-button">Read More</a>
-                    <a href="#" class="pill-button">Self-Hosted Git</a>
-                    <a href="#" class="pill-button">GitHub</a>
-                </div>
-            </li>
-
-            <li class="project-item">
-                <div class="project-meta">
-                    <h3>Other Project One</h3>
-                    <p>A short one-line description.</p>
-                </div>
-                <div class="project-actions">
-                    <a href="#" class="pill-button">Read More</a>
-                    <a href="#" class="pill-button">Self-Hosted Git</a>
-                    <a href="#" class="pill-button">GitHub</a>
-                </div>
-            </li>
+            {% endfor %}
         </ul>
     </section>
 </main>
