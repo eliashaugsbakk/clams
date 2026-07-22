@@ -7,7 +7,7 @@ import org.commonmark.renderer.html.HtmlRenderer;
 public class MarkdownConverter {
   public static String convertToHtml(String markdown) {
     Parser parser = Parser.builder().build();
-    HtmlRenderer renderer = HtmlRenderer.builder().build();
+    HtmlRenderer renderer = HtmlRenderer.builder().escapeHtml(true).build();
 
     Node document = parser.parse(markdown);
     return renderer.render(document);

@@ -1,5 +1,7 @@
 package no.eliashaugsbakk.clams.server.service;
 
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
 import no.eliashaugsbakk.clams.server.config.AppConfig;
 
 public class AuthService {
@@ -14,6 +16,12 @@ public class AuthService {
       return false;
     }
 
-    return incomingToken.equals(tokenHash);
+    try {
+      return MessageDigest.isEqual(
+          tokenHash.getBytes(StandardCharsets.UTF_8),
+          incomingToken.getBytes(StandardCharsets.UTF_8));
+    } catch (IllegalArgumentException e) {
+      return false;
+    }
   }
 }

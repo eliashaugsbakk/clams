@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.attribute.PosixFilePermissions;
 import java.security.SecureRandom;
 import java.util.Base64;
 import java.util.Properties;
@@ -36,8 +37,21 @@ public class AppConfig {
         Files.createDirectories(storageDir);
         System.out.println("Created application storage directory at: " + storageDir.toAbsolutePath());
       }
+      setOwnerOnlyPermissions(storageDir);
     } catch (IOException e) {
       System.err.println("Warning: Could not verify or create storage directory: " + e.getMessage());
+    }
+  }
+
+  private void setOwnerOnlyPermissions(Path path) throws IOException {
+    if (!Files.exists(path)) {
+      return;
+    }
+
+    try {
+      Files.setPosixFilePermissions(path, PosixFilePermissions.fromString("rwx------"));
+    } catch (UnsupportedOperationException e) {
+      // Ignore on non-POSIX file systems.
     }
   }
 
@@ -49,6 +63,7 @@ public class AppConfig {
       new SecureRandom().nextBytes(tokenBytes);
       String token = Base64.getUrlEncoder().withoutPadding().encodeToString(tokenBytes);
 
+      Files.createDirectories(configPath.getParent());
       try (BufferedWriter writer = Files.newBufferedWriter(configPath)) {
         writer.write(String.format("""
             storage_location=./data/
@@ -56,8 +71,8 @@ public class AppConfig {
             authorization_token=%s
             """, token));
       }
+      setOwnerOnlyPermissions(configPath);
       IO.println("Generated a default configuration file at: " + configPath);
-      IO.println("Generated authentication token: " + token);
 
     } catch (IOException e) {
       System.err.println("Could not create default config file: " + e.getMessage());
