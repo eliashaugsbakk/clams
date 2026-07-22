@@ -3,15 +3,15 @@ package no.eliashaugsbakk.clams.server.service;
 import java.text.Normalizer;
 import java.util.Locale;
 import java.util.regex.Pattern;
-import no.eliashaugsbakk.clams.server.repository.ArticlesRepo;
+import no.eliashaugsbakk.clams.server.repository.PostsRepo;
 
 public class SlugService {
-  private final ArticlesRepo articlesRepo;
+  private final PostsRepo postsRepo;
   private static final Pattern NON_LATIN = Pattern.compile("[^\\w-]");
   private static final Pattern WHITESPACE = Pattern.compile("[\\s]");
 
-  public SlugService(ArticlesRepo articlesRepo) {
-    this.articlesRepo = articlesRepo;
+  public SlugService(PostsRepo postsRepo) {
+    this.postsRepo = postsRepo;
   }
 
   public String toSlug(String input) {
@@ -31,7 +31,7 @@ public class SlugService {
     String finalSlug = slug;
     int counter = 2;
     while (true) {
-      if (articlesRepo.existsArticleBySlug(finalSlug)) {
+      if (postsRepo.existsPostBySlug(finalSlug)) {
         finalSlug = slug + "-" + counter;
         counter++;
       } else {

@@ -8,25 +8,25 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import no.eliashaugsbakk.clams.server.model.Article;
-import no.eliashaugsbakk.clams.server.model.ArticleMetaData;
+import no.eliashaugsbakk.clams.server.model.Post;
+import no.eliashaugsbakk.clams.server.model.PostMetaData;
 
-public class ArticlesRepoSqlite implements ArticlesRepo {
+public class PostsRepoSqlite implements PostsRepo {
   private final SqliteManager manager;
 
-  public ArticlesRepoSqlite(SqliteManager manager) {
+  public PostsRepoSqlite(SqliteManager manager) {
     this.manager = manager;
   }
 
   @Override
-  public List<ArticleMetaData> listArticlesMetaData() {
+  public List<PostMetaData> listPostsMetaData() {
     String sql = """
         SELECT title, slug, summary, published, last_edited, is_published
-        FROM articles
+        FROM posts
         ORDER BY published DESC
         """;
 
-    List<ArticleMetaData> articles = new ArrayList<>();
+    List<PostMetaData> posts = new ArrayList<>();
 
     try (Connection conn = manager.getConnection();
         PreparedStatement stmt = conn.prepareStatement(sql);
@@ -41,21 +41,21 @@ public class ArticlesRepoSqlite implements ArticlesRepo {
         Instant lastEdit = (lastEditRaw != null) ? Instant.parse(lastEditRaw) : null;
         boolean isPublished = resultSet.getBoolean("is_published");
 
-        articles.add(new ArticleMetaData(title, slug, summary, published, lastEdit, isPublished));
+        posts.add(new PostMetaData(title, slug, summary, published, lastEdit, isPublished));
       }
 
-      return articles;
+      return posts;
 
     } catch (SQLException e) {
-      throw new RepoException("Error fetching all article metadata sorted by time", e);
+      throw new RepoException("Error fetching all post metadata sorted by time", e);
     }
   }
 
   @Override
-  public Optional<Article> getArticle(String slug) {
+  public Optional<Post> getPost(String slug) {
     String sql = """
         SELECT title, slug, summary, content, published, last_edited, is_published
-        FROM articles
+        FROM posts
         WHERE slug = ?
         """;
 
@@ -67,33 +67,33 @@ public class ArticlesRepoSqlite implements ArticlesRepo {
       try (ResultSet resultSet = stmt.executeQuery()) {
         if (resultSet.next()) {
           String title = resultSet.getString("title");
-          String articleSlug = resultSet.getString("slug");
+          String postSlug = resultSet.getString("slug");
           String summary = resultSet.getString("summary");
           String content = resultSet.getString("content");
           Instant published = Instant.parse(resultSet.getString("published"));
           Instant lastEdited = Instant.parse(resultSet.getString("last_edited"));
           boolean isPublished = resultSet.getBoolean("is_published");
 
-          return Optional.of(new Article(title, articleSlug, summary, published, lastEdited, content, isPublished));
+          return Optional.of(new Post(title, postSlug, summary, published, lastEdited, content, isPublished));
         }
         return Optional.empty();
       }
 
     } catch (SQLException e) {
-      throw new RepoException("Error fetching full article by slug: " + slug, e);
+      throw new RepoException("Error fetching full post by slug: " + slug, e);
     }
   }
 
   @Override
-  public List<ArticleMetaData> searchArticlesBody(String query) {
+  public List<PostMetaData> searchPostsBody(String query) {
     String sql = """
         SELECT title, slug, summary, published, last_edited, is_published
-        FROM articles
+        FROM posts
         WHERE content LIKE ?
         ORDER BY published DESC
         """;
 
-    List<ArticleMetaData> articles = new ArrayList<>();
+    List<PostMetaData> posts = new ArrayList<>();
 
     try (Connection conn = manager.getConnection();
         PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -110,46 +110,46 @@ public class ArticlesRepoSqlite implements ArticlesRepo {
           Instant lastEdit = Instant.parse(resultSet.getString("last_edited"));
           boolean isPublished = resultSet.getBoolean("is_published");
 
-          articles.add(new ArticleMetaData(title, slug, summary, published, lastEdit, isPublished));
+          posts.add(new PostMetaData(title, slug, summary, published, lastEdit, isPublished));
         }
       }
 
-      return articles;
+      return posts;
 
     } catch (SQLException e) {
-      throw new RepoException("Error searching articles for query: " + query, e);
+      throw new RepoException("Error searching posts for query: " + query, e);
     }
   }
 
   @Override
-  public void addArticle(Article article) {
+  public void addPost(Post post) {
     String sql = """
-        INSERT INTO articles (slug, title, content, summary, published, last_edited, is_published)
+        INSERT INTO posts (slug, title, content, summary, published, last_edited, is_published)
         VALUES (?, ?, ?, ?, ?, ?, ?)
         """;
 
     try (Connection conn = manager.getConnection();
         PreparedStatement stmt = conn.prepareStatement(sql)) {
 
-      stmt.setString(1, article.slug());
-      stmt.setString(2, article.title());
-      stmt.setString(3, article.content());
-      stmt.setString(4, article.summary());
-      stmt.setString(5, article.timePublished().toString());
-      stmt.setString(6, article.timePublished().toString());
-      stmt.setBoolean(7, article.isPublished());
+      stmt.setString(1, post.slug());
+      stmt.setString(2, post.title());
+      stmt.setString(3, post.content());
+      stmt.setString(4, post.summary());
+      stmt.setString(5, post.timePublished().toString());
+      stmt.setString(6, post.timePublished().toString());
+      stmt.setBoolean(7, post.isPublished());
 
       stmt.executeUpdate();
 
     } catch (SQLException e) {
-      throw new RepoException("Error adding articles article: " + article.slug(), e);
+      throw new RepoException("Error adding posts post: " + post.slug(), e);
     }
   }
 
   @Override
-  public void updateArticle(Article article) {
+  public void updatePost(Post post) {
     String sql = """
-        UPDATE articles
+        UPDATE posts
         SET title = ?, content = ?, summary = ?, published = ?, last_edited = ?, is_published = ?
         WHERE slug = ?
         """;
@@ -157,25 +157,25 @@ public class ArticlesRepoSqlite implements ArticlesRepo {
     try (Connection conn = manager.getConnection();
         PreparedStatement stmt = conn.prepareStatement(sql)) {
 
-      stmt.setString(1, article.title());
-      stmt.setString(2, article.content());
-      stmt.setString(3, article.summary());
-      stmt.setString(4, article.timePublished().toString());
+      stmt.setString(1, post.title());
+      stmt.setString(2, post.content());
+      stmt.setString(3, post.summary());
+      stmt.setString(4, post.timePublished().toString());
       stmt.setString(5, Instant.now().toString());
-      stmt.setBoolean(6, article.isPublished());
-      stmt.setString(7, article.slug());
+      stmt.setBoolean(6, post.isPublished());
+      stmt.setString(7, post.slug());
 
       stmt.executeUpdate();
 
     } catch (SQLException e) {
-      throw new RepoException("Error updating articles article: " + article.slug(), e);
+      throw new RepoException("Error updating posts post: " + post.slug(), e);
     }
   }
 
   @Override
-  public void deleteArticle(String slug) {
+  public void deletePost(String slug) {
     String sql = """
-        DELETE FROM articles
+        DELETE FROM posts
         WHERE slug = ?
         """;
 
@@ -187,15 +187,15 @@ public class ArticlesRepoSqlite implements ArticlesRepo {
       stmt.executeUpdate();
 
     } catch (SQLException e) {
-      throw new RepoException("Error deleting articles article: " + slug, e);
+      throw new RepoException("Error deleting posts post: " + slug, e);
     }
   }
 
   @Override
-  public boolean existsArticleBySlug(String slug) {
+  public boolean existsPostBySlug(String slug) {
     String sql = """
         SELECT 1
-        FROM articles
+        FROM posts
         WHERE slug = ?
         LIMIT 1
         """;
@@ -210,7 +210,7 @@ public class ArticlesRepoSqlite implements ArticlesRepo {
       }
 
     } catch (SQLException e) {
-      throw new RepoException("Error checking existence of article by slug: " + slug, e);
+      throw new RepoException("Error checking existence of post by slug: " + slug, e);
     }
   }
 }

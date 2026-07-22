@@ -1,0 +1,38 @@
+{% extends "templates/layout.html" %}
+
+{% block content %}
+<main class="main-container">
+    <a href="/" class="back-link-top">&larr; back</a>
+    <header>
+        <h1>Blog</h1>
+        <p class="intro-text">My blog posts.</p>
+
+        <form action="/posts" method="GET" class="search-form">
+            <input type="text" name="search" value="{{ search_value }}" placeholder="Search posts..."
+                   aria-label="Search posts">
+            <button type="submit" class="pill-button">Search</button>
+        </form>
+    </header>
+
+    <section id="all" class="posts-section">
+        <h2>All Posts</h2>
+        {% for group in posts_by_year %}
+        <details class="year-accordion" {% if loop.first %}open{% endif %}>
+            <summary class="year-toggle">{{ group.key }}</summary>
+            <ul class="post-list">
+                {% for post in group.value %}
+                <li class="post-list-item">
+                    <span class="post-date">{{ post.formattedDate }}</span>
+                    <a href="/posts/{{ post.slug }}">{{ post.title }}</a>
+                    {% if post.summary is not empty %}
+                    <br>
+                    <span class="search-result-summary">-- {{ post.summary }}</span>
+                    {% endif %}
+                </li>
+                {% endfor %}
+            </ul>
+        </details>
+        {% endfor %}
+    </section>
+</main>
+{% endblock %}

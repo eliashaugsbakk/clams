@@ -1,4 +1,4 @@
-.article-header {
+.post-header {
     display: flex;
     justify-content: space-between;
     margin-top: 2.8rem;
@@ -20,23 +20,23 @@ blockquote {
     font-style: italic;
 }
 
-.article-content {
+.post-content {
     line-height: 1.8;
     font-size: var(--font-size-body);
     margin-bottom: 5rem;
 }
 
-.article-content p {
+.post-content p {
     margin-bottom: 1.5rem;
     font-size: inherit;
 }
 
-.article-content p:has(img) {
+.post-content p:has(img) {
     margin: 2.4rem 0;
     text-align: center;
 }
 
-.article-content img {
+.post-content img {
     width: 100%;
     max-width: 34.4rem;
     height: auto;
@@ -45,7 +45,7 @@ blockquote {
     display: inline-block;
 }
 
-.article-nav {
+.post-nav {
     display: flex;
     justify-content: space-between;
     margin-top: 3.8rem;
@@ -54,7 +54,7 @@ blockquote {
 }
 
 @media (max-width: 768px) {
-    .article-header {
+    .post-header {
         margin-top: 10px;
         flex-direction: column;
         align-items: center;

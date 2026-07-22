@@ -4,7 +4,7 @@
     margin: 0 auto 1.8rem auto;
 }
 
-.articles-section {
+.posts-section {
     margin-bottom: 3.8rem;
 }
 
@@ -49,26 +49,26 @@
     color: var(--accent-color)
 }
 
-.article-list {
+.post-list {
     margin-top: 0.625rem;
     padding-left: 2.2rem !important;
     border-left: 2px solid var(--border-color);
 }
 
-.article-list-item,
+.post-list-item,
 .search-result-item {
     margin-bottom: 0.8rem;
     font-size: 1rem;
     line-height: 1.6;
 }
 
-.article-list a,
+.post-list a,
 .search-result-item a {
     font-size: 1rem;
     font-weight: normal;
 }
 
-.article-date {
+.post-date {
     display: inline-block;
     font-size: 0.9rem;
     color: var(--text-color);
@@ -113,7 +113,7 @@
     font-style: italic;
 }
 
-.back-to-articles {
+.back-to-posts {
     margin-top: 2.4rem;
     display: inline-block;
 }

@@ -25,8 +25,8 @@ public class SqliteManager implements AutoCloseable {
   }
 
   public void init() {
-    String articles = """
-        CREATE TABLE IF NOT EXISTS articles (
+    String posts = """
+        CREATE TABLE IF NOT EXISTS posts (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             slug TEXT NOT NULL UNIQUE,
             title TEXT NOT NULL,
@@ -49,7 +49,7 @@ public class SqliteManager implements AutoCloseable {
 
     try (Connection conn = dataSource.getConnection(); Statement stmt = conn.createStatement()) {
 
-      stmt.execute(articles);
+      stmt.execute(posts);
       stmt.execute(images);
 
     } catch (SQLException e) {
