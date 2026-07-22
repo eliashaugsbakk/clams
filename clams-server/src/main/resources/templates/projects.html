@@ -2,9 +2,9 @@
 
 {% block content %}
 <main class="main-container">
-    <a href="/" class="back-link-top">&larr; back</a>
+    <a href="/" class="back-link-top">&larr; hjem</a>
     <header>
-        <h1>Projects</h1>
+        <h1>Prosjekter</h1>
     </header>
 
     <section class="projects-category">
@@ -17,10 +17,10 @@
                 </div>
                 <div class="project-actions">
                     {% if project.readMoreUrl %}
-                    <a href="{{ project.readMoreUrl }}" class="pill-button">Read More</a>
+                    <a href="{{ project.readMoreUrl }}" class="pill-button">Les Mer</a>
                     {% endif %}
                     {% if project.gitUrl %}
-                    <a href="{{ project.gitUrl }}" class="pill-button">Self-Hosted Git</a>
+                    <a href="{{ project.gitUrl }}" class="pill-button">Git repo</a>
                     {% endif %}
                     {% if project.gitHubUrl %}
                     <a href="{{ project.gitHubUrl }}" class="pill-button">GitHub</a>
