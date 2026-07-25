@@ -6,8 +6,11 @@ import io.javalin.rendering.template.JavalinPebble;
 import java.util.Map;
 import no.eliashaugsbakk.clams.server.config.AppContext;
 import no.eliashaugsbakk.clams.server.config.AppRoutes;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class Main {
+  private static final Logger log = LoggerFactory.getLogger(Main.class);
   void main() {
     // Initialize dependencies
     AppContext context = new AppContext();
@@ -37,7 +40,7 @@ public class Main {
         )));
 
         config.routes.exception(Exception.class, (e, ctx) -> {
-          e.printStackTrace();
+          log.error("Unhandled error on {} {}", ctx.method(), ctx.path(), e);
           ctx.status(500);
 
           if (ctx.path().startsWith("/api")) {
@@ -55,6 +58,7 @@ public class Main {
 
     } catch (Exception e) {
       context.close();
+      log.error("Unexpected error", e);
       throw e;
     }
   }

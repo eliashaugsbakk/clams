@@ -9,8 +9,11 @@ import java.nio.file.attribute.PosixFilePermissions;
 import java.security.SecureRandom;
 import java.util.Base64;
 import java.util.Properties;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class AppConfig {
+  private static final Logger log = LoggerFactory.getLogger(AppConfig.class);
   private final Properties properties = new Properties();
   private Path configPath;
 
@@ -35,11 +38,11 @@ public class AppConfig {
       Path storageDir = Path.of(getStorageLocation());
       if (!Files.exists(storageDir)) {
         Files.createDirectories(storageDir);
-        System.out.println("Created application storage directory at: " + storageDir.toAbsolutePath());
+        log.info("Created application storage directory at: {}", storageDir.toAbsolutePath());
       }
       setOwnerOnlyPermissions(storageDir);
     } catch (IOException e) {
-      System.err.println("Warning: Could not verify or create storage directory: " + e.getMessage());
+      log.warn("Could not verify or create storage directory", e);
     }
   }
 
@@ -72,10 +75,10 @@ public class AppConfig {
             """, token));
       }
       setOwnerOnlyPermissions(configPath);
-      IO.println("Generated a default configuration file at: " + configPath);
+      log.info("Generated a default configuration file at: {}", configPath);
 
     } catch (IOException e) {
-      System.err.println("Could not create default config file: " + e.getMessage());
+      log.error("Could not create default config file", e);
     }
   }
 
@@ -86,8 +89,6 @@ public class AppConfig {
   public String getAuthToken() {
     String token = properties.getProperty("authorization_token");
     if (token == null || token.isBlank()) {
-      System.err.println("CRITICAL: 'authorization_token' is missing or empty in config properties!");
-
       throw new IllegalStateException("CRITICAL: 'authorization_token' is missing or empty in config properties!");
     }
     return token;
