@@ -23,9 +23,10 @@ public class AppRoutes implements EndpointGroup {
     before(ctx -> {
       String path = ctx.path();
 
-      // Skip non-GET requests and API endpoints
+      // Skip non-GET requests, API endpoints, static resources, and queried requests
       if (!ctx.method().name().equalsIgnoreCase("GET")
           || path.startsWith("/api")
+          || isStaticResource(path)
           || ctx.queryString() != null) {
         return;
       }
@@ -51,11 +52,15 @@ public class AppRoutes implements EndpointGroup {
         return;
       }
 
-      // 2. Cache GET responses
+      // 2. Cache GET responses for HTML pages
+      String contentType = ctx.contentType();
       if (method.equalsIgnoreCase("GET")
           && !path.startsWith("/api") // exclude API responses
+          && !isStaticResource(path) // exclude static assets
           && ctx.queryString() == null // exclude queried pages
-          && ctx.status().getCode() == 200) { // only cache successful responses
+          && ctx.status().getCode() == 200
+          && contentType != null
+          && contentType.contains("text/html")) { // only cache HTML responses
 
         String renderedHtml = ctx.result();
         if (renderedHtml != null && !renderedHtml.isBlank()) {
@@ -109,5 +114,13 @@ public class AppRoutes implements EndpointGroup {
       post("media", appContext.getMediaController()::handlePostMedia);
       delete("media/{uuid}", appContext.getMediaController()::handleDeleteMedia);
     });
+  }
+
+  private static boolean isStaticResource(String path) {
+    if (path == null) {
+      return false;
+    }
+    return path.startsWith("/css/")
+        || path.startsWith("/images/");
   }
 }
