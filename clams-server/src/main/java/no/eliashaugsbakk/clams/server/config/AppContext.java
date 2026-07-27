@@ -4,7 +4,7 @@ import java.nio.file.Path;
 import no.eliashaugsbakk.clams.server.controller.PostsController;
 import no.eliashaugsbakk.clams.server.controller.MediaController;
 import no.eliashaugsbakk.clams.server.controller.PostController;
-import no.eliashaugsbakk.clams.server.controller.ProjectsController;
+import no.eliashaugsbakk.clams.server.controller.ProjectController;
 import no.eliashaugsbakk.clams.server.repository.PostsRepo;
 import no.eliashaugsbakk.clams.server.repository.PostsRepoSqlite;
 import no.eliashaugsbakk.clams.server.repository.MediaRepo;
@@ -21,7 +21,7 @@ public class AppContext implements AutoCloseable {
   private final PostsController postsController;
   private final MediaController mediaController;
   private final PostController postController;
-  private final ProjectsController projectsController;
+  private final ProjectController projectController;
   private final AuthService authService;
   private final PageCache pageCache;
 
@@ -40,7 +40,7 @@ public class AppContext implements AutoCloseable {
 
     this.postsController = new PostsController(dbManager);
     this.mediaController = new MediaController(mediaRepo, appConfig);
-    this.projectsController = new ProjectsController(projectsRepo);
+    this.projectController = new ProjectController(projectsRepo);
     this.postController = new PostController(postsRepo, slugService);
     this.authService = new AuthService(appConfig);
     this.pageCache = new PageCache(15);
@@ -48,7 +48,7 @@ public class AppContext implements AutoCloseable {
 
   public PostsController getPostsController() { return postsController; }
   public MediaController getMediaController() { return mediaController; }
-  public ProjectsController getProjectsController() { return projectsController; }
+  public ProjectController getProjectsController() { return projectController; }
   public PostController getPostController() { return postController; }
   public AuthService getAuthService() { return authService; }
   public PageCache pageCache() { return pageCache; }

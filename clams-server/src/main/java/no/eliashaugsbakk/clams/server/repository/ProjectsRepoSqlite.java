@@ -38,7 +38,7 @@ public class ProjectsRepoSqlite implements ProjectsRepo {
   }
 
   @Override
-  public void updateProject(long id, Project project) {
+  public boolean updateProject(Project project) {
     String sql = """
         UPDATE projects
         SET name = ?, read_more_url = ?, git_url = ?, git_hub_url = ?, description = ?
@@ -53,16 +53,17 @@ public class ProjectsRepoSqlite implements ProjectsRepo {
       stmt.setString(3, project.gitUrl());
       stmt.setString(4, project.gitHubUrl());
       stmt.setString(5, project.description());
-      stmt.setLong(6, id);
+      stmt.setLong(6, project.id());
 
-      stmt.executeUpdate();
+      int rowsUpdated = stmt.executeUpdate();
+      return rowsUpdated > 0;
     } catch (SQLException e) {
       throw new RepoException("Error updating project: ", e);
     }
   }
 
   @Override
-  public void deleteProject(long id) {
+  public boolean deleteProject(long id) {
     String sql = """
         DELETE FROM projects
         WHERE id = ?
@@ -73,8 +74,8 @@ public class ProjectsRepoSqlite implements ProjectsRepo {
 
       stmt.setLong(1, id);
 
-      stmt.executeUpdate();
-
+      int rowsUpdated = stmt.executeUpdate();
+      return rowsUpdated > 0;
     } catch (SQLException e) {
       throw new RepoException("Error deleting project " + id + ": ", e);
     }

@@ -5,8 +5,8 @@ import no.eliashaugsbakk.clams.server.model.Project;
 
 public interface ProjectsRepo {
   void addProject(Project post);
-  void updateProject(long id, Project project);
-  void deleteProject(long id);
+  boolean updateProject(Project project);
+  boolean deleteProject(long id);
 
   List<Project> getAllProjects();
 }
