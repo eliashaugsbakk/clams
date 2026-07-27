@@ -1,5 +1,6 @@
 package no.eliashaugsbakk.clams.server.config;
 
+import static io.javalin.apibuilder.ApiBuilder.after;
 import static io.javalin.apibuilder.ApiBuilder.before;
 import static io.javalin.apibuilder.ApiBuilder.delete;
 import static io.javalin.apibuilder.ApiBuilder.get;
@@ -19,6 +20,51 @@ public class AppRoutes implements EndpointGroup {
 
   @Override
   public void addEndpoints() {
+    before(ctx -> {
+      String path = ctx.path();
+
+      // Skip non-GET requests and API endpoints
+      if (!ctx.method().name().equalsIgnoreCase("GET")
+          || path.startsWith("/api")
+          || ctx.queryString() != null) {
+        return;
+      }
+
+      String cachedHtml = appContext.pageCache().get(path);
+      if (cachedHtml != null) {
+        ctx.result(cachedHtml);
+        ctx.contentType("text/html");
+        ctx.skipRemainingHandlers();
+      }
+    });
+
+    after(ctx -> {
+      String method = ctx.method().name();
+      String path = ctx.path();
+
+      // Invalidate cache on any modifying request if successful
+      if ((method.equalsIgnoreCase("POST")
+          || method.equalsIgnoreCase("PUT")
+          || method.equalsIgnoreCase("DELETE"))
+          && ctx.status().getCode() >= 200 && ctx.status().getCode() < 300) {
+        appContext.pageCache().clear();
+        return;
+      }
+
+      // 2. Cache GET responses
+      if (method.equalsIgnoreCase("GET")
+          && !path.startsWith("/api") // exclude API responses
+          && ctx.queryString() == null // exclude queried pages
+          && ctx.status().getCode() == 200) { // only cache successful responses
+
+        String renderedHtml = ctx.result();
+        if (renderedHtml != null && !renderedHtml.isBlank()) {
+          appContext.pageCache().put(path, renderedHtml);
+        }
+      }
+    });
+
+
     get("/", ctx -> ctx.redirect("/home"));
     get("/home", ctx -> ctx.render("templates/home.html",
         Map.of("page_title", "Elias Haugsbakk", "page_css", "home")));
@@ -35,8 +81,8 @@ public class AppRoutes implements EndpointGroup {
         String authHeader = ctx.header("Authorization");
 
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-          ctx.status(401).json(Map.of("error", "Unauthorized",
-              "message", "Missing or malformed Authorization header."));
+          ctx.status(401).json(Map.of("error", "Unauthorized", "message",
+              "Missing or malformed Authorization header."));
           ctx.skipRemainingHandlers();
           return;
         }
@@ -44,8 +90,7 @@ public class AppRoutes implements EndpointGroup {
         String token = authHeader.substring(7).trim();
         if (!appContext.getAuthService().isValid(token)) {
           ctx.status(403)
-              .json(Map.of("error", "Forbidden",
-                  "message", "Invalid API validation token."));
+              .json(Map.of("error", "Forbidden", "message", "Invalid API validation token."));
           ctx.skipRemainingHandlers();
         }
       });

@@ -9,15 +9,18 @@ import no.eliashaugsbakk.clams.server.config.AppRoutes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class Main {
-  private static final Logger log = LoggerFactory.getLogger(Main.class);
+public class App {
+  private static final Logger log = LoggerFactory.getLogger(App.class);
   void main() {
     // Initialize dependencies
     AppContext context = new AppContext();
 
     try {
       Javalin.create(config -> {
-        config.staticFiles.add("/public");
+        config.staticFiles.add(staticFiles -> {
+          staticFiles.hostedPath = "/";
+          staticFiles.directory = "/public";
+        });
         config.fileRenderer(new JavalinPebble());
 
         config.routes.error(404, ctx -> {
@@ -51,7 +54,6 @@ public class Main {
         });
 
         config.routes.apiBuilder(new AppRoutes(context));
-
         config.events.serverStopped(context::close);
       }).start(7070);
 
