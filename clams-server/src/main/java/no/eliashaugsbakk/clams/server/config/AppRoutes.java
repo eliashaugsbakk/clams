@@ -52,7 +52,7 @@ public class AppRoutes implements EndpointGroup {
         return;
       }
 
-      // 2. Cache GET responses for HTML pages
+      // Cache GET responses for HTML pages
       String contentType = ctx.contentType();
       if (method.equalsIgnoreCase("GET")
           && !path.startsWith("/api") // exclude API responses

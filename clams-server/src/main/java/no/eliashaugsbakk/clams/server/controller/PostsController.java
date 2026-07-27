@@ -89,7 +89,7 @@ public class PostsController {
 
     ctx.render("templates/posts.html",
         Map.of(
-            "page_title", "My posts",
+            "page_title", "Blog",
             "page_css", "posts",
             "posts_by_year", postItemsByYear,
             "search_value", ""

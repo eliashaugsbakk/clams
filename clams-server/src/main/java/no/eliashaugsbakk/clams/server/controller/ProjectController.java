@@ -18,7 +18,7 @@ public class ProjectController {
   public void handleGetProjects(Context ctx) {
     List<Project> allProjects = projectsRepo.getAllProjects();
     ctx.render("templates/projects.html", Map.of(
-        "page_title", "Blog",
+        "page_title", "Prosjekter",
         "page_css", "projects",
         "projects", allProjects));
   }
