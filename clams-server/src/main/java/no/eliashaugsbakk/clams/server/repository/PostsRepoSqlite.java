@@ -173,7 +173,7 @@ public class PostsRepoSqlite implements PostsRepo {
   }
 
   @Override
-  public void deletePost(String slug) {
+  public boolean deletePost(String slug) {
     String sql = """
         DELETE FROM posts
         WHERE slug = ?
@@ -184,8 +184,8 @@ public class PostsRepoSqlite implements PostsRepo {
 
       stmt.setString(1, slug);
 
-      stmt.executeUpdate();
-
+      int rowsAffected = stmt.executeUpdate();
+      return rowsAffected > 0;
     } catch (SQLException e) {
       throw new RepoException("Error deleting post " + slug + ": ", e);
     }

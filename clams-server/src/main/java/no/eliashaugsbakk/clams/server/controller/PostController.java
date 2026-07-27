@@ -24,12 +24,13 @@ public class PostController {
     String slug = ctx.pathParam("slug");
     PostDTO updatedPost = ctx.bodyAsClass(PostDTO.class);
 
-    postsRepo.getPost(slug)
-        .map(existing -> Post.fromUpdated(existing, updatedPost))
+    postsRepo.getPost(slug).map(existing -> Post.fromUpdated(existing, updatedPost))
         .ifPresentOrElse(postsRepo::updatePost, () -> ctx.status(404));
   }
 
   public void handleDeletePost(Context ctx) {
-    postsRepo.deletePost(ctx.pathParam("slug"));
+    if (!postsRepo.deletePost(ctx.pathParam("slug"))) {
+      ctx.status(404);
+    }
   }
 }

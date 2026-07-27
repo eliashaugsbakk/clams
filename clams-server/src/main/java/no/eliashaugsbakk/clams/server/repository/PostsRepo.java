@@ -12,6 +12,6 @@ public interface PostsRepo {
 
   void addPost(Post post);
   void updatePost(Post post);
-  void deletePost(String slug);
+  boolean deletePost(String slug);
   boolean existsPostBySlug(String slug);
 }
