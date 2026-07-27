@@ -161,7 +161,7 @@ public class PostsRepoSqlite implements PostsRepo {
       stmt.setString(2, post.content());
       stmt.setString(3, post.summary());
       stmt.setString(4, post.timePublished().toString());
-      stmt.setString(5, Instant.now().toString());
+      stmt.setString(5, post.lastEdited().toString());
       stmt.setBoolean(6, post.isPublished());
       stmt.setString(7, post.slug());
 

@@ -21,8 +21,12 @@ public class PostController {
   }
 
   public void handlePutPost(Context ctx) {
+    String slug = ctx.pathParam("slug");
     PostDTO updatedPost = ctx.bodyAsClass(PostDTO.class);
-    postsRepo.updatePost(new Post(updatedPost, ctx.pathParam("slug")));
+
+    postsRepo.getPost(slug)
+        .map(existing -> Post.fromUpdated(existing, updatedPost))
+        .ifPresentOrElse(postsRepo::updatePost, () -> ctx.status(404));
   }
 
   public void handleDeletePost(Context ctx) {
