@@ -53,7 +53,7 @@ pub fn upload(
         Some(existing) => client.update_post(existing, &payload)?,
         None => {
             let created = client.create_post(&payload)?;
-            println!("Created post with ID {}.", created.id);
+            println!("Created post with ID {} and slug '{}'.", created.id, created.slug);
         }
     }
     println!("Blog post saved.");
