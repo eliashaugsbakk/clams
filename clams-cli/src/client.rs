@@ -144,6 +144,13 @@ impl ApiClient {
         Ok(())
     }
 
+    pub fn list_projects(&self) -> Result<Vec<Project>, Box<dyn std::error::Error>> {
+        let response = self
+            .request(self.http.get(format!("{}/api/projects", self.base_url)))
+            .send()?;
+        self.json(response)
+    }
+
     pub fn create_project(&self, project: &Project) -> Result<(), Box<dyn std::error::Error>> {
         self.request(
             self.http
