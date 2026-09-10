@@ -14,6 +14,7 @@ import java.util.UUID;
 import no.eliashaugsbakk.clams.server.config.AppConfig;
 import no.eliashaugsbakk.clams.server.model.ImageMetaData;
 import no.eliashaugsbakk.clams.server.repository.MediaRepo;
+import no.eliashaugsbakk.clams.server.repository.PostsRepo;
 import no.eliashaugsbakk.clams.server.utils.ErrorResponses;
 import org.apache.commons.imaging.ImageFormat;
 import org.apache.commons.imaging.ImageFormats;
@@ -30,10 +31,12 @@ import org.apache.commons.imaging.Imaging;
 // END LLM EDIT
 public class MediaController {
   private final MediaRepo mediaRepo;
+  private final PostsRepo postsRepo;
   private final AppConfig appConfig;
 
-  public MediaController(MediaRepo mediaRepo, AppConfig appConfig) {
+  public MediaController(MediaRepo mediaRepo, PostsRepo postsRepo, AppConfig appConfig) {
     this.mediaRepo = mediaRepo;
+    this.postsRepo = postsRepo;
     this.appConfig = appConfig;
   }
 
@@ -159,6 +162,15 @@ public class MediaController {
       ErrorResponses.badRequest(ctx, "Invalid UUID format.");
       return;
     }
+
+    // BEGIN LLM EDIT: Refuse deletion when stored posts reference the public image URL.
+    List<String> referencingPosts = postsRepo.findPostTitlesReferencing("/media/" + uuid);
+    if (!referencingPosts.isEmpty()) {
+      ErrorResponses.conflict(ctx, "Image is referenced by post(s): "
+          + String.join(", ", referencingPosts) + ".");
+      return;
+    }
+    // END LLM EDIT
 
     try {
       boolean deleted = mediaRepo.deleteImage(uuid);

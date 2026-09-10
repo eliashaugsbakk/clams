@@ -14,4 +14,5 @@ public interface PostsRepo {
   void updatePost(Post post);
   boolean deletePost(String slug);
   boolean existsPostBySlug(String slug);
+  List<String> findPostTitlesReferencing(String imageReference);
 }

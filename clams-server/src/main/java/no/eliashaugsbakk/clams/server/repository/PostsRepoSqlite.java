@@ -213,4 +213,30 @@ public class PostsRepoSqlite implements PostsRepo {
       throw new RepoException("Error checking existence of post by slug: " + slug, e);
     }
   }
+
+  // BEGIN LLM EDIT: Check stored post content before allowing an image deletion.
+  @Override
+  public List<String> findPostTitlesReferencing(String imageReference) {
+    String sql = """
+        SELECT title
+        FROM posts
+        WHERE content LIKE ?
+        ORDER BY title ASC
+        """;
+
+    List<String> titles = new ArrayList<>();
+    try (Connection conn = manager.getConnection();
+        PreparedStatement stmt = conn.prepareStatement(sql)) {
+      stmt.setString(1, "%" + imageReference + "%");
+      try (ResultSet resultSet = stmt.executeQuery()) {
+        while (resultSet.next()) {
+          titles.add(resultSet.getString("title"));
+        }
+      }
+      return titles;
+    } catch (SQLException e) {
+      throw new RepoException("Error checking image references: " + imageReference, e);
+    }
+  }
+  // END LLM EDIT
 }

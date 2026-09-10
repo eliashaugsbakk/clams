@@ -44,7 +44,7 @@ public class AppContext implements AutoCloseable {
     // BEGIN LLM EDIT: Wire the public summary RSS controller to the post repository and site URL.
     this.rssController = new RssController(postsRepo, appConfig.getSiteUrl());
     // END LLM EDIT
-    this.mediaController = new MediaController(mediaRepo, appConfig);
+    this.mediaController = new MediaController(mediaRepo, postsRepo, appConfig);
     this.projectController = new ProjectController(projectsRepo);
     this.postController = new PostController(postsRepo, slugService);
     this.authService = new AuthService(appConfig);
