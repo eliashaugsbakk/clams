@@ -1,27 +1,52 @@
 # clams-cli
 
-> Disclaimer: This CLI was developed by an AI model. Review and adapt it before
-> using it against production content.
+> [!NOTE]
+> The Rust client in this directory was created entirely through AI-assisted
+> prompting (vibe coding). The server is separate. Read and understand the
+> client code before using it, especially against production systems or
+> content. Take appropriate precautions, test changes safely, and keep backups.
 
 `clams-cli` is a Linux-oriented Rust command-line client for the Clams CMS.
 It uploads and edits blog posts, manages projects, and lists reusable images.
 
 ## Build and configure
 
+Build the release binary:
+
 ```sh
 cargo build --release
-mkdir -p ~/.config/clams-cli
-chmod 700 ~/.config/clams-cli
 ```
 
-Create `~/.config/clams-cli/config.toml`:
+On first use, the CLI automatically creates its configuration directory and
+prompts for the server URL and API token:
+
+```sh
+clams-cli
+```
+
+The configuration is stored at:
+
+```text
+~/.config/clams-cli/config.toml
+```
+
+Update it interactively at any time:
+
+```sh
+clams-cli config
+```
+
+The command saves new values before testing the connection. If the test fails,
+it keeps the saved values and lets you retry the prompts or leave them as-is.
+Advanced users may also edit the file manually:
 
 ```toml
 server_url = "https://example.com"
 auth_token = "the-server-authorization-token"
 ```
 
-The token is sent as `Authorization: Bearer ...` for authenticated API calls.
+The token is sent as an `Authorization: Bearer ...` header for authenticated
+API calls. Keep the file private because it contains the API token.
 
 ## Commands
 
@@ -43,10 +68,13 @@ uploaded individually, and their filename references are replaced in the
 Markdown with public `/media/<uuid>` URLs. The Markdown file is updated locally
 after each successful upload.
 
+Running `clams-cli` without arguments provides the common operations through an
+interactive menu. `-h` and `--help` show the command reference.
+
 ## Source layout
 
 - `main.rs` defines the hybrid positional/subcommand interface.
-- `config.rs` loads the Linux XDG configuration.
+- `config.rs` loads and updates the Linux XDG configuration.
 - `client.rs` contains authenticated HTTP and API data types.
 - `file_io.rs` validates and discovers blog package files.
 - `blog.rs` implements post upload, edit, and deletion.
@@ -55,13 +83,3 @@ after each successful upload.
 The server exposes public image retrieval at `/media/{uuid}`. Mutations and
 metadata listing remain under authenticated `/api` routes. Post listing and
 retrieval are also available under `/api/posts` and `/api/posts/{slug}`.
-
-`clams-cli config` prompts for updated settings, saves them before testing the
-connection, and reports a failed test without discarding the new values. You
-can retry the prompts or keep the saved configuration. Running `clams-cli`
-without arguments provides the same common operations through an interactive
-menu. `-h` and `--help` show the command reference.
-
-The interactive menu covers blog upload, edit, and deletion; image listing;
-project add, edit, and removal; and configuration updates. Explicit
-subcommands are still useful when you already know the resource and identifier.
