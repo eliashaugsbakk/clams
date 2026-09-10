@@ -16,6 +16,11 @@ import no.eliashaugsbakk.clams.server.repository.SqliteManager;
 import no.eliashaugsbakk.clams.server.service.PostsSearchService;
 import no.eliashaugsbakk.clams.server.utils.MarkdownConverter;
 
+/**
+ * Public and API post retrieval controller.
+ *
+ * <p>Disclaimer: This file was edited by an AI model.</p>
+ */
 public class PostsController {
   private static final ZoneId OSLO_ZONE = ZoneId.of("Europe/Oslo");
   private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("MMM dd, yyyy");
@@ -28,6 +33,15 @@ public class PostsController {
   public PostsController(SqliteManager sqliteManager) {
     this.postsRepo = new PostsRepoSqlite(sqliteManager);
     this.postsSearchService = new PostsSearchService(postsRepo);
+  }
+
+  public void handleGetPostsApi(Context ctx) {
+    ctx.json(postsRepo.listPostsMetaData());
+  }
+
+  public void handleGetPostApi(Context ctx) {
+    postsRepo.getPost(ctx.pathParam("slug"))
+        .ifPresentOrElse(ctx::json, () -> ctx.status(404));
   }
 
   public void handleGetPost(Context ctx) {

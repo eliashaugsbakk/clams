@@ -7,6 +7,11 @@ import no.eliashaugsbakk.clams.server.model.PostDTO;
 import no.eliashaugsbakk.clams.server.repository.PostsRepo;
 import no.eliashaugsbakk.clams.server.service.SlugService;
 
+/**
+ * Authenticated post mutation controller.
+ *
+ * <p>Disclaimer: This file was edited by an AI model.</p>
+ */
 public class PostController {
   private final PostsRepo postsRepo;
   private final SlugService slugService;

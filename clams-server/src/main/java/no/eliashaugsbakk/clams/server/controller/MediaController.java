@@ -19,6 +19,11 @@ import org.apache.commons.imaging.ImageFormats;
 import org.apache.commons.imaging.ImageInfo;
 import org.apache.commons.imaging.Imaging;
 
+/**
+ * Media upload and retrieval controller.
+ *
+ * <p>Disclaimer: This file was edited by an AI model.</p>
+ */
 public class MediaController {
   private final MediaRepo mediaRepo;
   private final AppConfig appConfig;
@@ -56,7 +61,7 @@ public class MediaController {
 
       UUID generatedUuid = saveToStorage(imageBytes, file.filename(), file.contentType());
 
-      ctx.status(201).json(Map.of("uuid", generatedUuid, "url", "/api/media/" + generatedUuid));
+      ctx.status(201).json(Map.of("uuid", generatedUuid, "url", "/media/" + generatedUuid));
     } catch (Exception e) {
       ctx.status(400).result("Corrupted or invalid image data.");
     }

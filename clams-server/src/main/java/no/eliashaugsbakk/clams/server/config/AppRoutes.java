@@ -11,6 +11,13 @@ import static io.javalin.apibuilder.ApiBuilder.put;
 import io.javalin.apibuilder.EndpointGroup;
 import java.util.Map;
 
+/**
+ * Application routes.
+ *
+ * <p>Disclaimer: This file was edited by an AI model. The public media routes intentionally
+ * remain outside the authenticated {@code /api} group so rendered blog images can be fetched
+ * without an API token.</p>
+ */
 public class AppRoutes implements EndpointGroup {
   private final AppContext appContext;
 
@@ -81,6 +88,11 @@ public class AppRoutes implements EndpointGroup {
 
     path("projects", () -> get(appContext.getProjectsController()::handleGetProjects));
 
+    path("media", () -> {
+      get(appContext.getMediaController()::handleGetMediaIndex);
+      get("{uuid}", appContext.getMediaController()::handleGetMedia);
+    });
+
     path("api", () -> {
       before("*", ctx -> {
         String authHeader = ctx.header("Authorization");
@@ -103,6 +115,8 @@ public class AppRoutes implements EndpointGroup {
       post("posts", appContext.getPostController()::handlePostPost);
       put("posts/{slug}", appContext.getPostController()::handlePutPost);
       delete("posts/{slug}", appContext.getPostController()::handleDeletePost);
+      get("posts", appContext.getPostsController()::handleGetPostsApi);
+      get("posts/{slug}", appContext.getPostsController()::handleGetPostApi);
 
       get("projects", appContext.getProjectsController()::handleGetProjectsApi);
       post("projects", appContext.getProjectsController()::handlePostProject);
