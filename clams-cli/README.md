@@ -92,5 +92,7 @@ uploaded.
 
 The server exposes public image retrieval at `/media/{uuid}`. Mutations and
 metadata listing remain under authenticated `/api` routes. Post listing and
-retrieval are also available under `/api/posts` and `/api/posts/{slug}`.
+retrieval are also available under `/api/posts` and `/api/posts/{id}`. Public
+post URLs use `/posts/{id}/{slug}`; the numeric ID is the stable identity and
+the slug is the readable SEO component.
 The complete endpoint and payload reference is in [`docs/api.md`](../docs/api.md).
