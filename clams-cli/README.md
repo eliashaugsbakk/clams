@@ -59,6 +59,7 @@ clams-cli project add
 clams-cli project edit 12
 clams-cli project remove 12
 clams-cli images
+clams-cli images upload ./content/diagram.jpeg
 clams-cli config
 ```
 
@@ -72,6 +73,7 @@ Running `clams-cli` without arguments provides the common operations through an
 interactive menu organized into Blog posts, Projects, Images, and
 Configuration sections. Project edit and removal show a list of projects and
 let you select one by name instead of requiring you to look up its numeric ID.
+The Images section can upload a standalone JPEG or list existing images.
 `-h` and `--help` show the command reference.
 
 ## Source layout

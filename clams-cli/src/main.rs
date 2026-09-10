@@ -34,7 +34,10 @@ enum Command {
         #[command(subcommand)]
         action: ProjectAction,
     },
-    Images,
+    Images {
+        #[command(subcommand)]
+        action: Option<ImagesAction>,
+    },
     Config,
 }
 
@@ -50,6 +53,11 @@ enum ProjectAction {
     Add,
     Edit { id: i64 },
     Remove { id: i64 },
+}
+
+#[derive(Subcommand)]
+enum ImagesAction {
+    Upload { path: String },
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -75,9 +83,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             ProjectAction::Edit { id } => projects::edit(&client, id)?,
             ProjectAction::Remove { id } => projects::remove(&client, id)?,
         },
-        (_, Some(Command::Images)) => {
-            print_images(&client)?;
-        }
+        (_, Some(Command::Images { action })) => match action {
+            Some(ImagesAction::Upload { path }) => upload_image(&client, &path)?,
+            None => print_images(&client)?,
+        },
         (_, Some(Command::Config)) => unreachable!("configuration is handled before API setup"),
         (None, None) => interactive_menu(&client, &mut config)?,
     }
@@ -136,7 +145,7 @@ fn interactive_menu(
         {
             0 => blog_menu(client)?,
             1 => project_menu(client)?,
-            2 => print_images(client)?,
+            2 => images_menu(client)?,
             3 => update_configuration(config)?,
             _ => break,
         }
@@ -189,5 +198,40 @@ fn project_menu(client: &client::ApiClient) -> Result<(), Box<dyn std::error::Er
         2 => projects::remove_selected(client)?,
         _ => {}
     }
+    Ok(())
+}
+
+fn images_menu(client: &client::ApiClient) -> Result<(), Box<dyn std::error::Error>> {
+    match Select::new()
+        .with_prompt("Images")
+        .items(&["Upload image", "List images", "Back"])
+        .default(0)
+        .interact()?
+    {
+        0 => {
+            let path = Input::<String>::new()
+                .with_prompt("JPEG image path")
+                .interact_text()?;
+            upload_image(client, &path)?;
+        }
+        1 => print_images(client)?,
+        _ => {}
+    }
+    Ok(())
+}
+
+fn upload_image(client: &client::ApiClient, path: &str) -> Result<(), Box<dyn std::error::Error>> {
+    let path = std::path::Path::new(path);
+    file_io::validate_image(path)?;
+    let upload = client.upload_image(path)?;
+    println!("Image uploaded successfully.");
+    println!("Filename: {}", upload.original_filename);
+    println!("UUID: {}", upload.uuid);
+    println!(
+        "Content type: {}",
+        upload.content_type.as_deref().unwrap_or("(unknown)")
+    );
+    println!("Uploaded at: {}", upload.time_uploaded);
+    println!("URL: {}", upload.url);
     Ok(())
 }

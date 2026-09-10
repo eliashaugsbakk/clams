@@ -12,6 +12,26 @@ pub struct BlogPackage {
     pub image_files: Vec<PathBuf>,
 }
 
+pub fn validate_image(path: &std::path::Path) -> Result<(), Box<dyn std::error::Error>> {
+    let is_jpeg = path
+        .extension()
+        .and_then(|extension| extension.to_str())
+        .is_some_and(|extension| extension.eq_ignore_ascii_case("jpeg"));
+    if !path.is_file() || !is_jpeg {
+        return Err(format!("Image must be a .jpeg file: {}", path.display()).into());
+    }
+
+    let image = ImageReader::open(path)?.with_guessed_format()?.decode()?;
+    if image.width() > 2000 || image.height() > 2000 {
+        return Err(format!(
+            "Image {} exceeds the server limit of 2000x2000 pixels",
+            path.display()
+        )
+        .into());
+    }
+    Ok(())
+}
+
 pub fn collect_package(input_path: &str) -> Result<BlogPackage, Box<dyn std::error::Error>> {
     let mut md_files = Vec::new();
     let mut jpeg_files = Vec::new();
@@ -39,16 +59,7 @@ pub fn collect_package(input_path: &str) -> Result<BlogPackage, Box<dyn std::err
     }
 
     for image_path in &jpeg_files {
-        let image = ImageReader::open(image_path)?
-            .with_guessed_format()?
-            .decode()?;
-        if image.width() > 2000 || image.height() > 2000 {
-            return Err(format!(
-                "Image {} exceeds the server limit of 2000x2000 pixels",
-                image_path.display()
-            )
-            .into());
-        }
+        validate_image(image_path)?;
     }
 
     Ok(BlogPackage {
