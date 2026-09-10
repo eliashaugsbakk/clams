@@ -32,6 +32,35 @@ pub fn validate_image(path: &std::path::Path) -> Result<(), Box<dyn std::error::
     Ok(())
 }
 
+pub fn collect_images(input_path: &str) -> Result<Vec<PathBuf>, Box<dyn std::error::Error>> {
+    let path = std::path::Path::new(input_path);
+    if !path.is_dir() {
+        return Err(format!("Image directory does not exist: {}", path.display()).into());
+    }
+
+    let mut images = Vec::new();
+    for entry in fs::read_dir(path)? {
+        let entry_path = entry?.path();
+        let is_jpeg = entry_path
+            .extension()
+            .and_then(|extension| extension.to_str())
+            .is_some_and(|extension| extension.eq_ignore_ascii_case("jpeg"));
+        if is_jpeg {
+            images.push(entry_path);
+        }
+    }
+    images.sort();
+
+    if images.is_empty() {
+        return Err(format!("No .jpeg images found in {}", path.display()).into());
+    }
+
+    for image_path in &images {
+        validate_image(image_path)?;
+    }
+    Ok(images)
+}
+
 pub fn collect_package(input_path: &str) -> Result<BlogPackage, Box<dyn std::error::Error>> {
     let mut md_files = Vec::new();
     let mut jpeg_files = Vec::new();

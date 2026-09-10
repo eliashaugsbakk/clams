@@ -58,6 +58,7 @@ enum ProjectAction {
 #[derive(Subcommand)]
 enum ImagesAction {
     Upload { path: String },
+    UploadDir { directory: String },
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -85,6 +86,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         },
         (_, Some(Command::Images { action })) => match action {
             Some(ImagesAction::Upload { path }) => upload_image(&client, &path)?,
+            Some(ImagesAction::UploadDir { directory }) => {
+                upload_image_directory(&client, &directory)?
+            }
             None => print_images(&client)?,
         },
         (_, Some(Command::Config)) => unreachable!("configuration is handled before API setup"),
@@ -204,7 +208,12 @@ fn project_menu(client: &client::ApiClient) -> Result<(), Box<dyn std::error::Er
 fn images_menu(client: &client::ApiClient) -> Result<(), Box<dyn std::error::Error>> {
     match Select::new()
         .with_prompt("Images")
-        .items(&["Upload image", "List images", "Back"])
+        .items(&[
+            "Upload image",
+            "Upload image directory",
+            "List images",
+            "Back",
+        ])
         .default(0)
         .interact()?
     {
@@ -214,7 +223,13 @@ fn images_menu(client: &client::ApiClient) -> Result<(), Box<dyn std::error::Err
                 .interact_text()?;
             upload_image(client, &path)?;
         }
-        1 => print_images(client)?,
+        1 => {
+            let directory = Input::<String>::new()
+                .with_prompt("JPEG image directory")
+                .interact_text()?;
+            upload_image_directory(client, &directory)?;
+        }
+        2 => print_images(client)?,
         _ => {}
     }
     Ok(())
@@ -233,5 +248,21 @@ fn upload_image(client: &client::ApiClient, path: &str) -> Result<(), Box<dyn st
     );
     println!("Uploaded at: {}", upload.time_uploaded);
     println!("URL: {}", upload.url);
+    Ok(())
+}
+
+fn upload_image_directory(
+    client: &client::ApiClient,
+    directory: &str,
+) -> Result<(), Box<dyn std::error::Error>> {
+    let images = file_io::collect_images(directory)?;
+    println!("Validated {} image(s). Uploading...", images.len());
+
+    let mut uploaded = 0;
+    for image in images {
+        upload_image(client, &image.to_string_lossy())?;
+        uploaded += 1;
+    }
+    println!("Uploaded {uploaded} image(s).");
     Ok(())
 }

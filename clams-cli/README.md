@@ -60,6 +60,7 @@ clams-cli project edit 12
 clams-cli project remove 12
 clams-cli images
 clams-cli images upload ./content/diagram.jpeg
+clams-cli images upload-dir ./content/images/
 clams-cli config
 ```
 
@@ -74,6 +75,10 @@ interactive menu organized into Blog posts, Projects, Images, and
 Configuration sections. Project edit and removal show a list of projects and
 let you select one by name instead of requiring you to look up its numeric ID.
 The Images section can upload a standalone JPEG or list existing images.
+`images upload-dir` validates every non-recursive `.jpeg` file in a directory
+before uploading any of them, then uploads them sequentially and reports each
+result. A network failure stops the batch and reports the files already
+uploaded.
 `-h` and `--help` show the command reference.
 
 ## Source layout
