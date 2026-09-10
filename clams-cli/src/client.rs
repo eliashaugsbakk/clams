@@ -83,6 +83,13 @@ impl ApiClient {
         Ok(response.json()?)
     }
 
+    pub fn test_connection(&self) -> Result<(), Box<dyn std::error::Error>> {
+        self.request(self.http.get(format!("{}/api/media", self.base_url)))
+            .send()?
+            .error_for_status()?;
+        Ok(())
+    }
+
     pub fn upload_image(&self, path: &Path) -> Result<UploadResponse, Box<dyn std::error::Error>> {
         let bytes = fs::read(path)?;
         let part = multipart::Part::bytes(bytes)

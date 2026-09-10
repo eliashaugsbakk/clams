@@ -34,6 +34,7 @@ clams-cli project add
 clams-cli project edit 12
 clams-cli project remove 12
 clams-cli images
+clams-cli config
 ```
 
 A blog directory must contain exactly one `.md` file and may contain `.jpeg`
@@ -54,3 +55,13 @@ after each successful upload.
 The server exposes public image retrieval at `/media/{uuid}`. Mutations and
 metadata listing remain under authenticated `/api` routes. Post listing and
 retrieval are also available under `/api/posts` and `/api/posts/{slug}`.
+
+`clams-cli config` prompts for updated settings, saves them before testing the
+connection, and reports a failed test without discarding the new values. You
+can retry the prompts or keep the saved configuration. Running `clams-cli`
+without arguments provides the same common operations through an interactive
+menu. `-h` and `--help` show the command reference.
+
+The interactive menu covers blog upload, edit, and deletion; image listing;
+project add, edit, and removal; and configuration updates. Explicit
+subcommands are still useful when you already know the resource and identifier.

@@ -45,6 +45,26 @@ impl Config {
         Ok(config)
     }
 
+    pub fn update_interactively(&self) -> Result<Self, Box<dyn std::error::Error>> {
+        let server_url = Input::new()
+            .with_prompt("Server URL")
+            .default(self.server_url.clone())
+            .interact_text()?;
+        let entered_token = Password::new()
+            .with_prompt("API token (leave blank to keep current)")
+            .allow_empty_password(true)
+            .interact()?;
+
+        Ok(Self {
+            server_url,
+            auth_token: if entered_token.is_empty() {
+                self.auth_token.clone()
+            } else {
+                entered_token
+            },
+        })
+    }
+
     pub fn save(&self, path: &PathBuf) -> Result<(), Box<dyn std::error::Error>> {
         let contents = toml::to_string_pretty(self)?;
         fs::write(path, contents)?;
