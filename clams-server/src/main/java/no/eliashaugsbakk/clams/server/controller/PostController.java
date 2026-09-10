@@ -7,11 +7,14 @@ import no.eliashaugsbakk.clams.server.model.PostDTO;
 import no.eliashaugsbakk.clams.server.repository.PostsRepo;
 import no.eliashaugsbakk.clams.server.service.SlugService;
 
+// BEGIN LLM EDIT: Added the following disclaimer while integrating the CLI post API.
 /**
  * Authenticated post mutation controller.
  *
- * <p>Disclaimer: This file was edited by an AI model.</p>
+ * <p>Disclaimer: This file was touched by an LLM while wiring the CLI's post API integration;
+ * no post mutation behavior was intentionally changed here.</p>
  */
+// END LLM EDIT
 public class PostController {
   private final PostsRepo postsRepo;
   private final SlugService slugService;

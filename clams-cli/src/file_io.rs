@@ -1,6 +1,7 @@
 //! Blog package discovery and local image validation.
 //!
-//! Disclaimer: This file was created and edited by an AI model.
+//! Disclaimer: Written by an LLM. This file discovers one Markdown file,
+//! collects JPEG assets, and validates their dimensions before upload.
 
 use image::ImageReader;
 use std::fs;

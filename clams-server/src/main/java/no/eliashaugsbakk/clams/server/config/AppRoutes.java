@@ -11,13 +11,15 @@ import static io.javalin.apibuilder.ApiBuilder.put;
 import io.javalin.apibuilder.EndpointGroup;
 import java.util.Map;
 
+// BEGIN LLM EDIT: Documented the public media and authenticated post route changes.
 /**
  * Application routes.
  *
- * <p>Disclaimer: This file was edited by an AI model. The public media routes intentionally
- * remain outside the authenticated {@code /api} group so rendered blog images can be fetched
- * without an API token.</p>
+ * <p>Disclaimer: The following changes were written by an LLM: public {@code /media} GET routes
+ * were added for browser-accessible images, and authenticated post list/get API routes were added
+ * under {@code /api/posts}. Review these authorization and caching boundaries before deployment.</p>
  */
+// END LLM EDIT
 public class AppRoutes implements EndpointGroup {
   private final AppContext appContext;
 
@@ -88,10 +90,12 @@ public class AppRoutes implements EndpointGroup {
 
     path("projects", () -> get(appContext.getProjectsController()::handleGetProjects));
 
+    // BEGIN LLM EDIT: Added public image retrieval routes for browser-rendered blog content.
     path("media", () -> {
       get(appContext.getMediaController()::handleGetMediaIndex);
       get("{uuid}", appContext.getMediaController()::handleGetMedia);
     });
+    // END LLM EDIT
 
     path("api", () -> {
       before("*", ctx -> {
@@ -115,8 +119,10 @@ public class AppRoutes implements EndpointGroup {
       post("posts", appContext.getPostController()::handlePostPost);
       put("posts/{slug}", appContext.getPostController()::handlePutPost);
       delete("posts/{slug}", appContext.getPostController()::handleDeletePost);
+      // BEGIN LLM EDIT: Added authenticated post listing and retrieval for CLI workflows.
       get("posts", appContext.getPostsController()::handleGetPostsApi);
       get("posts/{slug}", appContext.getPostsController()::handleGetPostApi);
+      // END LLM EDIT
 
       get("projects", appContext.getProjectsController()::handleGetProjectsApi);
       post("projects", appContext.getProjectsController()::handlePostProject);

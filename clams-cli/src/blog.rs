@@ -1,6 +1,7 @@
 //! Blog post upload, edit, and deletion workflows.
 //!
-//! Disclaimer: This file was created and edited by an AI model.
+//! Disclaimer: Written by an LLM. This file prompts for post metadata,
+//! uploads and rewrites local JPEG references, and performs post CRUD calls.
 
 use crate::{
     client::{ApiClient, PostPayload},

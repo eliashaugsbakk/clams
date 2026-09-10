@@ -16,11 +16,14 @@ import no.eliashaugsbakk.clams.server.repository.SqliteManager;
 import no.eliashaugsbakk.clams.server.service.PostsSearchService;
 import no.eliashaugsbakk.clams.server.utils.MarkdownConverter;
 
+// BEGIN LLM EDIT: Documented the new authenticated post read handlers.
 /**
  * Public and API post retrieval controller.
  *
- * <p>Disclaimer: This file was edited by an AI model.</p>
+ * <p>Disclaimer: The following changes were written by an LLM: authenticated handlers now return
+ * post metadata and full posts by slug for CLI editing workflows.</p>
  */
+// END LLM EDIT
 public class PostsController {
   private static final ZoneId OSLO_ZONE = ZoneId.of("Europe/Oslo");
   private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("MMM dd, yyyy");
@@ -35,14 +38,18 @@ public class PostsController {
     this.postsSearchService = new PostsSearchService(postsRepo);
   }
 
+  // BEGIN LLM EDIT: Added authenticated post metadata retrieval for CLI selection workflows.
   public void handleGetPostsApi(Context ctx) {
     ctx.json(postsRepo.listPostsMetaData());
   }
+  // END LLM EDIT
 
+  // BEGIN LLM EDIT: Added authenticated full-post retrieval for CLI editing workflows.
   public void handleGetPostApi(Context ctx) {
     postsRepo.getPost(ctx.pathParam("slug"))
         .ifPresentOrElse(ctx::json, () -> ctx.status(404));
   }
+  // END LLM EDIT
 
   public void handleGetPost(Context ctx) {
     var postOpt = postsRepo.getPost(ctx.pathParam("slug"));

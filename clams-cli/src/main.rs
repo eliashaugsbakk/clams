@@ -1,6 +1,7 @@
 //! Command-line entry point for managing Clams content.
 //!
-//! Disclaimer: This file was created and edited by an AI model.
+//! Disclaimer: Written by an LLM. This file defines the CLI parser, interactive menu,
+//! configuration-update flow, and dispatch for blog, project, and image operations.
 
 mod blog;
 mod client;

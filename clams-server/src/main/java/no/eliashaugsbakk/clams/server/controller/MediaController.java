@@ -19,11 +19,14 @@ import org.apache.commons.imaging.ImageFormats;
 import org.apache.commons.imaging.ImageInfo;
 import org.apache.commons.imaging.Imaging;
 
+// BEGIN LLM EDIT: Documented the public image URL behavior change.
 /**
  * Media upload and retrieval controller.
  *
- * <p>Disclaimer: This file was edited by an AI model.</p>
+ * <p>Disclaimer: The following change was written by an LLM: successful image uploads now return
+ * a public {@code /media/{uuid}} URL instead of the authenticated API URL.</p>
  */
+// END LLM EDIT
 public class MediaController {
   private final MediaRepo mediaRepo;
   private final AppConfig appConfig;
@@ -61,7 +64,9 @@ public class MediaController {
 
       UUID generatedUuid = saveToStorage(imageBytes, file.filename(), file.contentType());
 
+      // BEGIN LLM EDIT: Return the public image route so Markdown does not need an API token.
       ctx.status(201).json(Map.of("uuid", generatedUuid, "url", "/media/" + generatedUuid));
+      // END LLM EDIT
     } catch (Exception e) {
       ctx.status(400).result("Corrupted or invalid image data.");
     }

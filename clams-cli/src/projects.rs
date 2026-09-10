@@ -1,6 +1,7 @@
 //! Interactive project CRUD workflows.
 //!
-//! Disclaimer: This file was created and edited by an AI model.
+//! Disclaimer: Written by an LLM. This file prompts for project fields
+//! and performs project create, update, and delete calls.
 
 use crate::client::{ApiClient, Project};
 use dialoguer::Input;

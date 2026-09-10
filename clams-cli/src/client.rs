@@ -1,6 +1,7 @@
 //! Authenticated HTTP client for the Clams server API.
 //!
-//! Disclaimer: This file was created and edited by an AI model.
+//! Disclaimer: Written by an LLM. This file implements authenticated blocking HTTP,
+//! JSON API calls, multipart JPEG uploads, and response models for the CLI.
 
 use crate::config::Config;
 use reqwest::blocking::{Client, multipart};

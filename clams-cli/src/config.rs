@@ -1,6 +1,7 @@
 //! Configuration handling for the Clams content CLI.
 //!
-//! Disclaimer: This file was created and edited by an AI model.
+//! Disclaimer: Written by an LLM. This file implements XDG config discovery,
+//! first-run prompts, interactive updates, persistence, and token input.
 
 use dialoguer::{Input, Password};
 use serde::{Deserialize, Serialize};
