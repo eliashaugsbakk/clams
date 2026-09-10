@@ -11,6 +11,25 @@ The API base URL is the server URL. Requests under `/api` require:
 Authorization: Bearer <authorization-token>
 ```
 
+The unversioned `/api` namespace is the project's version-one API contract.
+Compatible additions may be made within the `1.x` release line. Existing
+endpoints and response fields should not be removed or change meaning without a
+major-version decision.
+
+API errors use this JSON shape:
+
+```json
+{
+  "error": "Bad Request",
+  "message": "Field 'title' is required.",
+  "status": 400
+}
+```
+
+Browser-facing routes render the site's HTML error page instead. The public
+`/media` routes remain intentionally available without an API token so blog
+images can be embedded in web pages.
+
 The server can set `site_url` in `~/.config/clams/clams.properties` to the
 public origin used in generated links:
 
@@ -41,9 +60,13 @@ Creates a post. JSON body:
 }
 ```
 
+Returns `201 Created` with an empty response body.
+
 ### `PUT /api/posts/{slug}`
 
 Updates a post using the same JSON body as creation.
+
+Returns `204 No Content` when the post exists and is updated.
 
 ### `DELETE /api/posts/{slug}`
 
@@ -60,13 +83,20 @@ Returns all projects, including their numeric IDs.
 Creates a project. JSON fields are `name`, `readMoreUrl`, `gitUrl`,
 `gitHubUrl`, and `description`.
 
+Returns `201 Created` with an empty response body. `name` is required; the
+other fields are optional.
+
 ### `PUT /api/projects/{id}`
 
 Updates a project using the same fields as creation.
 
+Returns `204 No Content` when the project exists and is updated.
+
 ### `DELETE /api/projects/{id}`
 
 Deletes a project.
+
+Returns `204 No Content` when the project exists and is deleted.
 
 ## Images
 
@@ -97,6 +127,8 @@ Returns image metadata for authenticated image overview and reuse.
 ### `DELETE /api/media/{uuid}`
 
 Deletes image metadata and the stored image file.
+
+Returns `204 No Content` when the image exists and is deleted.
 
 ### `GET /media/{uuid}`
 

@@ -43,9 +43,11 @@ public class PostController {
     validatePost(updatedPost);
 
     postsRepo.getPost(slug)
-        .map(existing -> Post.fromUpdated(existing, updatedPost))
         .ifPresentOrElse(
-            postsRepo::updatePost,
+            existing -> {
+              postsRepo.updatePost(Post.fromUpdated(existing, updatedPost));
+              ctx.status(HttpStatus.NO_CONTENT);
+            },
             () -> ErrorResponses.notFound(ctx, "Post not found."));
   }
 
