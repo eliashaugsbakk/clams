@@ -3,9 +3,9 @@
 {% block content %}
 <main class="main-container">
     <div class="error-container">
-        <div class="error-code">404</div>
-        <h1>Fil Ikke Funnet</h1>
-        <p>Filen du ser etter finnes ikke.</p>
+        <div class="error-code">{{ error_code | default("404") }}</div>
+        <h1>{{ error_title | default("Not Found") }}</h1>
+        <p>{{ error_message | default("Filen du ser etter finnes ikke.") }}</p>
         <p class="error-home-link">
             <a href="/">Tilbake til Hjemmesiden</a>
         </p>
