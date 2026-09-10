@@ -166,8 +166,12 @@ fn update_configuration(config: &mut config::Config) -> Result<(), Box<dyn std::
 fn print_images(client: &client::ApiClient) -> Result<(), Box<dyn std::error::Error>> {
     for image in client.list_images()? {
         println!(
-            "{}\t{}\t/media/{}",
-            image.uuid, image.original_filename, image.uuid
+            "{}\t{}\t{}\t{}\t/media/{}",
+            image.uuid,
+            image.original_filename,
+            image.content_type,
+            image.time_uploaded,
+            image.uuid
         );
     }
     Ok(())

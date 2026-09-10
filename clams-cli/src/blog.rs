@@ -22,7 +22,7 @@ pub fn upload(
             .file_name()
             .ok_or("Image has no filename")?
             .to_string_lossy();
-        content = content.replace(&name.to_string(), &format!("/media/{}", upload.uuid));
+        content = content.replace(&name.to_string(), &upload.url);
     }
     fs::write(&package.markdown_file, &content)?;
 

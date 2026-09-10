@@ -17,18 +17,7 @@ pub struct ImageResponse {
 
 #[derive(Debug, Deserialize)]
 pub struct UploadResponse {
-    pub uuid: String,
     pub url: String,
-}
-
-#[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct Post {
-    pub title: String,
-    pub slug: String,
-    pub summary: Option<String>,
-    pub content: String,
-    #[serde(rename = "isPublished")]
-    pub is_published: bool,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -118,20 +107,6 @@ impl ApiClient {
         self.json(response)
     }
 
-    pub fn list_posts(&self) -> Result<Vec<Post>, Box<dyn std::error::Error>> {
-        let response = self
-            .request(self.http.get(format!("{}/api/posts", self.base_url)))
-            .send()?;
-        self.json(response)
-    }
-
-    pub fn get_post(&self, slug: &str) -> Result<Post, Box<dyn std::error::Error>> {
-        let response = self
-            .request(self.http.get(format!("{}/api/posts/{slug}", self.base_url)))
-            .send()?;
-        self.json(response)
-    }
-
     pub fn create_post(&self, payload: &PostPayload) -> Result<(), Box<dyn std::error::Error>> {
         self.request(
             self.http
@@ -166,13 +141,6 @@ impl ApiClient {
         .send()?
         .error_for_status()?;
         Ok(())
-    }
-
-    pub fn list_projects(&self) -> Result<Vec<Project>, Box<dyn std::error::Error>> {
-        let response = self
-            .request(self.http.get(format!("{}/api/projects", self.base_url)))
-            .send()?;
-        self.json(response)
     }
 
     pub fn create_project(&self, project: &Project) -> Result<(), Box<dyn std::error::Error>> {
