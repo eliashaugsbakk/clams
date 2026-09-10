@@ -19,6 +19,13 @@ pub fn upload(
     let mut content = fs::read_to_string(&package.markdown_file)?;
     for image in &package.image_files {
         let upload = client.upload_image(image)?;
+        println!(
+            "Uploaded {} as {} ({}, {})",
+            upload.original_filename,
+            upload.uuid,
+            upload.content_type.as_deref().unwrap_or("unknown type"),
+            upload.time_uploaded
+        );
         let name = image
             .file_name()
             .ok_or("Image has no filename")?

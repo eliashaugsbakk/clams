@@ -18,7 +18,14 @@ pub struct ImageResponse {
 
 #[derive(Debug, Deserialize)]
 pub struct UploadResponse {
+    pub uuid: String,
     pub url: String,
+    #[serde(rename = "originalFilename")]
+    pub original_filename: String,
+    #[serde(rename = "contentType")]
+    pub content_type: Option<String>,
+    #[serde(rename = "timeUploaded")]
+    pub time_uploaded: String,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]

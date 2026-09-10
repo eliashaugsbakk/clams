@@ -36,6 +36,12 @@ public class MediaController {
     this.appConfig = appConfig;
   }
 
+  // BEGIN LLM EDIT: Return complete upload metadata for CLI confirmation and image reuse.
+  public record ImageUploadResponse(UUID uuid, String url, String originalFilename,
+                                    String contentType, String timeUploaded) {
+  }
+  // END LLM EDIT
+
   public void handlePostMedia(Context ctx) {
     UploadedFile file = ctx.uploadedFile("image");
 
@@ -62,17 +68,27 @@ public class MediaController {
         }
       }
 
-      UUID generatedUuid = saveToStorage(imageBytes, file.filename(), file.contentType());
+      // BEGIN LLM EDIT: Use one timestamp for both persisted metadata and the upload response.
+      Instant uploadedAt = Instant.now();
+      UUID generatedUuid = saveToStorage(
+          imageBytes, file.filename(), file.contentType(), uploadedAt);
+      // END LLM EDIT
 
-      // BEGIN LLM EDIT: Return the public image route so Markdown does not need an API token.
-      ctx.status(201).json(Map.of("uuid", generatedUuid, "url", "/media/" + generatedUuid));
+      // BEGIN LLM EDIT: Return the public image route and stored metadata in one response.
+      ctx.status(201).json(new ImageUploadResponse(
+          generatedUuid,
+          "/media/" + generatedUuid,
+          file.filename(),
+          file.contentType(),
+          uploadedAt.toString()));
       // END LLM EDIT
     } catch (Exception e) {
       ctx.status(400).result("Corrupted or invalid image data.");
     }
   }
 
-  private UUID saveToStorage(byte[] bytes, String originalFilename, String contentType)
+  private UUID saveToStorage(
+      byte[] bytes, String originalFilename, String contentType, Instant uploadedAt)
       throws IOException {
     UUID uuid = UUID.randomUUID();
     Path path = Path.of(appConfig.getStorageLocation(), "images", uuid + ".jpeg");
@@ -80,7 +96,7 @@ public class MediaController {
     Files.write(path, bytes);
 
     try {
-      mediaRepo.addImage(new ImageMetaData(uuid, originalFilename, contentType, Instant.now()));
+      mediaRepo.addImage(new ImageMetaData(uuid, originalFilename, contentType, uploadedAt));
       return uuid;
     } catch (Exception e) {
       Files.deleteIfExists(path);
