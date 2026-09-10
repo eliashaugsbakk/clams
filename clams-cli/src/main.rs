@@ -9,6 +9,7 @@ mod file_io;
 mod projects;
 
 use clap::{Parser, Subcommand};
+use dialoguer::Select;
 
 #[derive(Parser)]
 #[command(
@@ -74,7 +75,34 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 );
             }
         }
-        (None, None) => println!("Use --help for commands."),
+        (None, None) => match Select::new()
+            .with_prompt("What would you like to manage?")
+            .items(&[
+                "Blog post upload",
+                "Image overview",
+                "Project management",
+                "Exit",
+            ])
+            .default(0)
+            .interact()?
+        {
+            0 => {
+                let dir = dialoguer::Input::<String>::new()
+                    .with_prompt("Blog directory")
+                    .interact_text()?;
+                blog::upload(&client, &dir, None)?;
+            }
+            1 => {
+                for image in client.list_images()? {
+                    println!(
+                        "{}\t{}\t/media/{}",
+                        image.uuid, image.original_filename, image.uuid
+                    );
+                }
+            }
+            2 => projects::add(&client)?,
+            _ => {}
+        },
     }
     Ok(())
 }

@@ -2,6 +2,7 @@
 //!
 //! Disclaimer: This file was created and edited by an AI model.
 
+use dialoguer::{Input, Password};
 use serde::{Deserialize, Serialize};
 use std::fs;
 use std::path::PathBuf;
@@ -27,11 +28,16 @@ impl Config {
         let path = Self::get_config_path()?;
 
         if !path.exists() {
-            return Err(format!(
-                "No config found at {}. Create it with server_url and auth_token.",
+            println!(
+                "No config found at {}. Configure the Clams server.",
                 path.display()
-            )
-            .into());
+            );
+            let config = Config {
+                server_url: Input::new().with_prompt("Server URL").interact_text()?,
+                auth_token: Password::new().with_prompt("API token").interact()?,
+            };
+            config.save(&path)?;
+            return Ok(config);
         }
 
         let contents = fs::read_to_string(&path)?;
