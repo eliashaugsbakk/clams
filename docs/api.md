@@ -143,7 +143,9 @@ Returns image metadata for authenticated image overview and reuse.
 
 ### `DELETE /api/media/{uuid}`
 
-Deletes image metadata and the stored image file.
+Deletes image metadata and the stored image file when the image is not
+referenced by any stored post. The server returns `409 Conflict` when deletion
+would leave a post with a broken image reference.
 
 Returns `204 No Content` when the image exists and is deleted.
 

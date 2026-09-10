@@ -59,6 +59,7 @@ enum ProjectAction {
 enum ImagesAction {
     Upload { path: String },
     UploadDir { directory: String },
+    Delete { uuid: String },
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -89,6 +90,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             Some(ImagesAction::UploadDir { directory }) => {
                 upload_image_directory(&client, &directory)?
             }
+            Some(ImagesAction::Delete { uuid }) => delete_image(&client, &uuid)?,
             None => print_images(&client)?,
         },
         (_, Some(Command::Config)) => unreachable!("configuration is handled before API setup"),
@@ -212,6 +214,7 @@ fn images_menu(client: &client::ApiClient) -> Result<(), Box<dyn std::error::Err
             "Upload image",
             "Upload image directory",
             "List images",
+            "Delete image",
             "Back",
         ])
         .default(0)
@@ -230,6 +233,12 @@ fn images_menu(client: &client::ApiClient) -> Result<(), Box<dyn std::error::Err
             upload_image_directory(client, &directory)?;
         }
         2 => print_images(client)?,
+        3 => {
+            let uuid = Input::<String>::new()
+                .with_prompt("Image UUID")
+                .interact_text()?;
+            delete_image(client, &uuid)?;
+        }
         _ => {}
     }
     Ok(())
@@ -264,5 +273,24 @@ fn upload_image_directory(
         uploaded += 1;
     }
     println!("Uploaded {uploaded} image(s).");
+    Ok(())
+}
+
+fn delete_image(
+    client: &client::ApiClient,
+    uuid: &str,
+) -> Result<(), Box<dyn std::error::Error>> {
+    if !Confirm::new()
+        .with_prompt(format!(
+            "Permanently delete image {uuid}? This cannot be undone and referenced images are protected."
+        ))
+        .default(false)
+        .interact()?
+    {
+        return Ok(());
+    }
+
+    client.delete_image(uuid)?;
+    println!("Image deleted.");
     Ok(())
 }

@@ -117,6 +117,22 @@ impl ApiClient {
         self.json(response)
     }
 
+    pub fn delete_image(&self, uuid: &str) -> Result<(), Box<dyn std::error::Error>> {
+        let response = self
+            .request(
+                self.http
+                    .delete(format!("{}/api/media/{uuid}", self.base_url)),
+            )
+            .send()?;
+        if response.status().is_success() {
+            return Ok(());
+        }
+
+        let status = response.status();
+        let message = response.text().unwrap_or_default();
+        Err(format!("Image deletion failed ({status}): {message}").into())
+    }
+
     pub fn create_post(&self, payload: &PostPayload) -> Result<(), Box<dyn std::error::Error>> {
         self.request(
             self.http

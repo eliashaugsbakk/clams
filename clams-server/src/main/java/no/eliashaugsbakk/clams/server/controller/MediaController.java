@@ -164,7 +164,7 @@ public class MediaController {
     }
 
     // BEGIN LLM EDIT: Refuse deletion when stored posts reference the public image URL.
-    List<String> referencingPosts = postsRepo.findPostTitlesReferencing("/media/" + uuid);
+    List<String> referencingPosts = postsRepo.findPostTitlesReferencing(uuid.toString());
     if (!referencingPosts.isEmpty()) {
       ErrorResponses.conflict(ctx, "Image is referenced by post(s): "
           + String.join(", ", referencingPosts) + ".");
