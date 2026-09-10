@@ -10,6 +10,7 @@ import static io.javalin.apibuilder.ApiBuilder.put;
 
 import io.javalin.apibuilder.EndpointGroup;
 import java.util.Map;
+import no.eliashaugsbakk.clams.server.utils.ErrorResponses;
 
 // BEGIN LLM EDIT: Documented the public media and authenticated post route changes.
 /**
@@ -106,16 +107,14 @@ public class AppRoutes implements EndpointGroup {
         String authHeader = ctx.header("Authorization");
 
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-          ctx.status(401).json(Map.of("error", "Unauthorized", "message",
-              "Missing or malformed Authorization header."));
+          ErrorResponses.unauthorized(ctx, "Missing or malformed Authorization header.");
           ctx.skipRemainingHandlers();
           return;
         }
 
         String token = authHeader.substring(7).trim();
         if (!appContext.getAuthService().isValid(token)) {
-          ctx.status(403)
-              .json(Map.of("error", "Forbidden", "message", "Invalid API validation token."));
+          ErrorResponses.forbidden(ctx, "Invalid API validation token.");
           ctx.skipRemainingHandlers();
         }
       });

@@ -14,6 +14,7 @@ import java.util.UUID;
 import no.eliashaugsbakk.clams.server.config.AppConfig;
 import no.eliashaugsbakk.clams.server.model.ImageMetaData;
 import no.eliashaugsbakk.clams.server.repository.MediaRepo;
+import no.eliashaugsbakk.clams.server.utils.ErrorResponses;
 import org.apache.commons.imaging.ImageFormat;
 import org.apache.commons.imaging.ImageFormats;
 import org.apache.commons.imaging.ImageInfo;
@@ -46,7 +47,7 @@ public class MediaController {
     UploadedFile file = ctx.uploadedFile("image");
 
     if (file == null) {
-      ctx.status(400).result("Missing image file payload.");
+      ErrorResponses.badRequest(ctx, "Missing image file payload.");
       return;
     }
 
@@ -58,12 +59,12 @@ public class MediaController {
         ImageFormat format = info.getFormat();
 
         if (format != ImageFormats.JPEG) {
-          ctx.status(415).result("Unsupported format: only jpeg allowed.");
+          ErrorResponses.unsupportedMediaType(ctx, "Unsupported format: only jpeg allowed.");
           return;
         }
 
         if (info.getWidth() > 2000 || info.getHeight() > 2000) {
-          ctx.status(400).result("Image dimensions are too large: max allowed 2000x2000");
+          ErrorResponses.badRequest(ctx, "Image dimensions are too large: max allowed 2000x2000");
           return;
         }
       }
@@ -83,7 +84,7 @@ public class MediaController {
           uploadedAt.toString()));
       // END LLM EDIT
     } catch (Exception e) {
-      ctx.status(400).result("Corrupted or invalid image data.");
+      ErrorResponses.badRequest(ctx, "Corrupted or invalid image data.");
     }
   }
 
@@ -111,12 +112,12 @@ public class MediaController {
     try {
       uuid = UUID.fromString(uuidStr);
     } catch (IllegalArgumentException e) {
-      ctx.status(400).result("Invalid UUID format.");
+      ErrorResponses.badRequest(ctx, "Invalid UUID format.");
       return;
     }
 
     if (mediaRepo.getImage(uuid).isEmpty()) {
-      ctx.status(404).result("Image not found.");
+      ErrorResponses.notFound(ctx, "Image not found.");
       return;
     }
 
@@ -128,10 +129,10 @@ public class MediaController {
       try {
         ctx.result(Files.newInputStream(path));
       } catch (IOException e) {
-        ctx.status(500).result("Error reading image file.");
+        ErrorResponses.serverError(ctx, "Error reading image file.");
       }
     } else {
-      ctx.status(404).result("Image file missing from storage.");
+      ErrorResponses.notFound(ctx, "Image file missing from storage.");
     }
   }
 
@@ -155,18 +156,18 @@ public class MediaController {
     try {
       uuid = UUID.fromString(ctx.pathParam("uuid"));
     } catch (IllegalArgumentException e) {
-      ctx.status(400).result("Invalid UUID format.");
+      ErrorResponses.badRequest(ctx, "Invalid UUID format.");
       return;
     }
 
     try {
       boolean deleted = mediaRepo.deleteImage(uuid);
       if (!deleted) {
-        ctx.status(404).result("Image not found.");
+        ErrorResponses.notFound(ctx, "Image not found.");
         return;
       }
     } catch (Exception e) {
-      ctx.status(500).result("Failed to delete image metadata from database.");
+      ErrorResponses.serverError(ctx, "Failed to delete image metadata from database.");
       return;
     }
 
@@ -174,7 +175,7 @@ public class MediaController {
     try {
       Files.deleteIfExists(path);
     } catch (IOException e) {
-      ctx.status(500).result("Failed to delete image file from storage.");
+      ErrorResponses.serverError(ctx, "Failed to delete image file from storage.");
       return;
     }
 

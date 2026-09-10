@@ -7,6 +7,7 @@ import no.eliashaugsbakk.clams.server.model.PostDTO;
 import no.eliashaugsbakk.clams.server.repository.PostsRepo;
 import no.eliashaugsbakk.clams.server.service.SlugService;
 import no.eliashaugsbakk.clams.server.utils.ApiValidation;
+import no.eliashaugsbakk.clams.server.utils.ErrorResponses;
 
 // BEGIN LLM EDIT: Added the following disclaimer while integrating the CLI post API.
 /**
@@ -45,12 +46,12 @@ public class PostController {
         .map(existing -> Post.fromUpdated(existing, updatedPost))
         .ifPresentOrElse(
             postsRepo::updatePost,
-            () -> ctx.status(HttpStatus.NOT_FOUND));
+            () -> ErrorResponses.notFound(ctx, "Post not found."));
   }
 
   public void handleDeletePost(Context ctx) {
     if (!postsRepo.deletePost(ctx.pathParam("slug"))) {
-      ctx.status(HttpStatus.NOT_FOUND);
+      ErrorResponses.notFound(ctx, "Post not found.");
     } else {
       ctx.status(HttpStatus.NO_CONTENT);
     }

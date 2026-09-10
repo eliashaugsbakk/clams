@@ -8,6 +8,7 @@ import java.util.Map;
 import no.eliashaugsbakk.clams.server.model.Project;
 import no.eliashaugsbakk.clams.server.repository.ProjectsRepo;
 import no.eliashaugsbakk.clams.server.utils.ApiValidation;
+import no.eliashaugsbakk.clams.server.utils.ErrorResponses;
 
 // BEGIN LLM EDIT: Added stable validation constraints for project API payloads.
 /**
@@ -58,7 +59,7 @@ public class ProjectController {
 
     boolean updated = projectsRepo.updateProject(projectToUpdate);
     if (!updated) {
-      ctx.status(HttpStatus.NOT_FOUND);
+      ErrorResponses.notFound(ctx, "Project not found.");
       return;
     }
 
@@ -69,7 +70,7 @@ public class ProjectController {
     long id = parseId(ctx);
     boolean deleted = projectsRepo.deleteProject(id);
     if (!deleted) {
-      ctx.status(HttpStatus.NOT_FOUND);
+      ErrorResponses.notFound(ctx, "Project not found.");
       return;
     }
     ctx.status(HttpStatus.NO_CONTENT);

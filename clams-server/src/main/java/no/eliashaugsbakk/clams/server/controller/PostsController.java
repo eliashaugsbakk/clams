@@ -44,10 +44,16 @@ public class PostsController {
   }
   // END LLM EDIT
 
-  // BEGIN LLM EDIT: Added authenticated full-post retrieval for CLI editing workflows.
+  // BEGIN LLM EDIT: Added authenticated full-post retrieval and stable API not-found responses.
   public void handleGetPostApi(Context ctx) {
     postsRepo.getPost(ctx.pathParam("slug"))
-        .ifPresentOrElse(ctx::json, () -> ctx.status(404));
+        .ifPresentOrElse(ctx::json, () -> {
+          ctx.status(404).json(Map.of(
+              "error", "Not Found",
+              "message", "Post not found.",
+              "status", 404
+          ));
+        });
   }
   // END LLM EDIT
 
