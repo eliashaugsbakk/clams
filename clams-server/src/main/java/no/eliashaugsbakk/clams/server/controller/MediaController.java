@@ -3,6 +3,7 @@ package no.eliashaugsbakk.clams.server.controller;
 import io.javalin.http.Context;
 import io.javalin.http.UploadedFile;
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
@@ -33,6 +34,7 @@ public class MediaController {
   // BEGIN LLM EDIT: Add advisory and hard upload-size thresholds for image safety.
   private static final long IMAGE_WARNING_BYTES = 5L * 1024 * 1024;
   private static final long IMAGE_MAX_BYTES = 20L * 1024 * 1024;
+  private static final long REQUEST_MAX_BYTES = 22L * 1024 * 1024;
   // END LLM EDIT
 
   private final MediaRepo mediaRepo;
@@ -59,12 +61,20 @@ public class MediaController {
       return;
     }
 
-    try (InputStream is = file.content()) {
-      byte[] imageBytes = is.readAllBytes();
-      if (imageBytes.length > IMAGE_MAX_BYTES) {
-        ErrorResponses.payloadTooLarge(ctx, "Images must be no larger than 20 MiB.");
-        return;
+    String contentLength = ctx.header("Content-Length");
+    if (contentLength != null) {
+      try {
+        if (Long.parseLong(contentLength) > REQUEST_MAX_BYTES) {
+          ErrorResponses.payloadTooLarge(ctx, "Image requests must be no larger than 20 MiB.");
+          return;
+        }
+      } catch (NumberFormatException ignored) {
+        // The bounded stream below remains the authoritative limit.
       }
+    }
+
+    try (InputStream is = file.content()) {
+      byte[] imageBytes = readAtMost(is, IMAGE_MAX_BYTES);
       if (imageBytes.length > IMAGE_WARNING_BYTES) {
         ctx.header("X-Clams-Warning",
             "Image is larger than 5 MiB; consider compressing it when practical.");
@@ -99,10 +109,32 @@ public class MediaController {
           file.contentType(),
           uploadedAt.toString()));
       // END LLM EDIT
+    } catch (PayloadTooLargeException e) {
+      ErrorResponses.payloadTooLarge(ctx, "Images must be no larger than 20 MiB.");
     } catch (Exception e) {
       ErrorResponses.badRequest(ctx, "Corrupted or invalid image data.");
     }
   }
+
+  // BEGIN LLM EDIT: Bound image buffering so oversized bodies cannot consume unbounded memory.
+  private static byte[] readAtMost(InputStream input, long maximumBytes) throws IOException {
+    ByteArrayOutputStream output = new ByteArrayOutputStream();
+    byte[] buffer = new byte[8192];
+    long total = 0;
+    int read;
+    while ((read = input.read(buffer)) != -1) {
+      total += read;
+      if (total > maximumBytes) {
+        throw new PayloadTooLargeException();
+      }
+      output.write(buffer, 0, read);
+    }
+    return output.toByteArray();
+  }
+
+  private static final class PayloadTooLargeException extends IOException {
+  }
+  // END LLM EDIT
 
   private UUID saveToStorage(
       byte[] bytes, String originalFilename, String contentType, Instant uploadedAt)
