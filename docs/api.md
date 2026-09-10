@@ -11,6 +11,13 @@ The API base URL is the server URL. Requests under `/api` require:
 Authorization: Bearer <authorization-token>
 ```
 
+The server can set `site_url` in `~/.config/clams/clams.properties` to the
+public origin used in generated links:
+
+```properties
+site_url=https://example.com
+```
+
 ## Posts
 
 ### `GET /api/posts`
@@ -95,3 +102,15 @@ Deletes image metadata and the stored image file.
 
 Returns the JPEG image without requiring an API token. This route is intended
 for Markdown embedded in public blog posts.
+
+## RSS
+
+### `GET /rss.xml`
+
+Returns a public RSS 2.0 summary feed containing only published posts. Each
+item includes the title, summary, publication date, and a link to the full
+post on the website. Full post content is intentionally not included.
+
+The response uses `Content-Type: application/rss+xml` and
+`Cache-Control: public, max-age=900`. When `site_url` is not configured, the
+server derives absolute links from the request URL.
