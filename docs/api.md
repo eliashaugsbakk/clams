@@ -58,7 +58,8 @@ Returns post metadata, including the immutable numeric `id` and current SEO
 
 ### `GET /api/posts/{id}`
 
-Returns the full post for an authenticated numeric ID.
+Returns the full post for an authenticated numeric ID. Responses include
+`createdAt`, `publishedAt`, and `updatedAt` metadata.
 
 ### `POST /api/posts`
 

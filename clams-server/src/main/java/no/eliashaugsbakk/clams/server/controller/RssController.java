@@ -47,8 +47,8 @@ public class RssController {
         escapeXml(siteUrl),
         postsRepo.listPostsMetaData().stream()
             .filter(post -> Boolean.TRUE.equals(post.isPublished()))
-            .filter(post -> post.slug() != null && post.title() != null && post.timePublished() != null)
-            .sorted((left, right) -> right.timePublished().compareTo(left.timePublished()))
+            .filter(post -> post.slug() != null && post.title() != null && post.publishedAt() != null)
+            .sorted((left, right) -> right.publishedAt().compareTo(left.publishedAt()))
             .map(post -> itemXml(post, siteUrl))
             .collect(Collectors.joining("\n")));
 
@@ -72,7 +72,7 @@ public class RssController {
         escapeXml(post.title()),
         escapeXml(postUrl),
         escapeXml(postUrl),
-        RSS_DATE_FORMAT.format(post.timePublished()),
+        RSS_DATE_FORMAT.format(post.publishedAt()),
         escapeXml(summary));
   }
 

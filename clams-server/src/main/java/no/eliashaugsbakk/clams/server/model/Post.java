@@ -6,19 +6,23 @@ import java.time.Instant;
 /**
  * Blog post model.
  *
- * <p>Disclaimer: The numeric identity changes in this model were written by an LLM.</p>
+ * <p>Disclaimer: The numeric identity and explicit timestamp changes in this model were written
+ * by an LLM.</p>
  */
 // END LLM EDIT
-public record Post(Long id, String title, String slug, String summary, Instant timePublished,
-                   Instant lastEdited, String content, boolean isPublished) {
+public record Post(Long id, String title, String slug, String summary, Instant createdAt,
+                   Instant publishedAt, Instant updatedAt, String content, boolean isPublished) {
   public Post(PostDTO postDTO, String slug) {
-    this(null, postDTO.title(), slug, postDTO.summary(), Instant.now(), Instant.now(), postDTO.content(),
-        postDTO.isPublished());
+    this(null, postDTO.title(), slug, postDTO.summary(), Instant.now(),
+        postDTO.isPublished() ? Instant.now() : null, Instant.now(), postDTO.content(), postDTO.isPublished());
   }
 
   public static Post fromUpdated(Post existing, PostDTO postDTO) {
     return new Post(existing.id(), postDTO.title(), existing.slug(), postDTO.summary(),
-        existing.timePublished(), Instant.now(),
+        existing.createdAt(), postDTO.isPublished()
+            ? (existing.publishedAt() == null ? Instant.now() : existing.publishedAt())
+            : null,
+        Instant.now(),
         postDTO.content(), postDTO.isPublished());
   }
 }

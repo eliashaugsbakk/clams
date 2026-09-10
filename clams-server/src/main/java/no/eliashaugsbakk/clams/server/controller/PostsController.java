@@ -79,7 +79,7 @@ public class PostsController {
       return;
     }
 
-    String formattedDate = post.timePublished().atZone(OSLO_ZONE).format(DATE_FORMATTER);
+    String formattedDate = post.publishedAt().atZone(OSLO_ZONE).format(DATE_FORMATTER);
 
     ctx.render("templates/post.html", Map.of(
         "page_title", post.title() + " -- Elias Haugsbakk",
@@ -103,6 +103,7 @@ public class PostsController {
   private void handlePostsIndex(Context ctx) {
     List<PostMetaData> allPosts = postsRepo.listPostsMetaData().stream()
         .filter(PostMetaData::isPublished)
+        .filter(post -> post.publishedAt() != null)
         .toList();
 
     Map<Integer, List<PostMetaData>> postsByYear = groupPostsByYear(allPosts);
@@ -116,8 +117,8 @@ public class PostsController {
                     post.title(),
                     post.slug(),
                     post.summary() != null ? post.summary() : "",
-                    post.timePublished().atZone(OSLO_ZONE).format(DATE_FORMATTER),
-                    post.timePublished().atZone(OSLO_ZONE).getYear()
+                    post.publishedAt().atZone(OSLO_ZONE).format(DATE_FORMATTER),
+                    post.publishedAt().atZone(OSLO_ZONE).getYear()
                 ))
                 .toList()
         ));
@@ -137,13 +138,14 @@ public class PostsController {
 
     List<PostItem> resultItems = results.stream()
         .filter(PostMetaData::isPublished)
+        .filter(post -> post.publishedAt() != null)
         .map(post -> new PostItem(
             post.id(),
             post.title(),
             post.slug(),
             post.summary() != null ? post.summary() : "",
-            post.timePublished().atZone(OSLO_ZONE).format(DATE_FORMATTER),
-            post.timePublished().atZone(OSLO_ZONE).getYear()
+            post.publishedAt().atZone(OSLO_ZONE).format(DATE_FORMATTER),
+            post.publishedAt().atZone(OSLO_ZONE).getYear()
         ))
         .toList();
 
@@ -168,7 +170,7 @@ public class PostsController {
   private Map<Integer, List<PostMetaData>> groupPostsByYear(List<PostMetaData> posts) {
     Map<Integer, List<PostMetaData>> unsortedGroups = posts.stream()
         .collect(Collectors.groupingBy(
-            post -> post.timePublished().atZone(OSLO_ZONE).getYear(),
+            post -> post.publishedAt().atZone(OSLO_ZONE).getYear(),
             Collectors.toList()
         ));
 
