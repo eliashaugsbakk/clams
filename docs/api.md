@@ -30,6 +30,18 @@ Browser-facing routes render the site's HTML error page instead. The public
 `/media` routes remain intentionally available without an API token so blog
 images can be embedded in web pages.
 
+Mutation payload limits are currently:
+
+- post `title`: required, maximum 200 characters;
+- post `content`: required, maximum 1,000,000 characters;
+- post `summary`: optional, maximum 1,000 characters;
+- project `name`: required, maximum 200 characters;
+- project URLs: optional, maximum 2,000 characters;
+- project `description`: optional, maximum 10,000 characters.
+
+Invalid payloads return `400 Bad Request`; missing resources return `404 Not
+Found`; unsupported image formats return `415 Unsupported Media Type`.
+
 The server can set `site_url` in `~/.config/clams/clams.properties` to the
 public origin used in generated links:
 
