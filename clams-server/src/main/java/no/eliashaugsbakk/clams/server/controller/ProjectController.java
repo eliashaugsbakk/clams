@@ -88,6 +88,9 @@ public class ProjectController {
   // BEGIN LLM EDIT: Apply consistent size constraints while preserving optional project fields.
   private void validateProject(Project project) {
     ApiValidation.requiredText("name", project.name(), 200);
+    if (project.displayOrder() != null && project.displayOrder() < 0) {
+      throw new BadRequestResponse("Field 'displayOrder' must be zero or greater.");
+    }
     ApiValidation.optionalText("readMoreUrl", project.readMoreUrl(), 2_000);
     ApiValidation.optionalText("gitUrl", project.gitUrl(), 2_000);
     ApiValidation.optionalText("gitHubUrl", project.gitHubUrl(), 2_000);

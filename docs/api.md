@@ -97,6 +97,7 @@ Creates a project. JSON fields are `name`, `readMoreUrl`, `gitUrl`,
 `gitHubUrl`, `description`, and optional `displayOrder`. Lower display order
 values appear first. If omitted, a new project is appended after existing
 projects.
+`displayOrder` must be zero or greater.
 
 Returns `201 Created` with an empty response body. `name` is required; the
 other fields are optional.

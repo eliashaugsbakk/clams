@@ -32,9 +32,15 @@ public class ProjectsRepoSqlite implements ProjectsRepo {
       stmt.setString(3, project.gitUrl());
       stmt.setString(4, project.gitHubUrl());
       stmt.setString(5, project.description());
-      int displayOrder = project.displayOrder() != null
-          ? project.displayOrder()
-          : nextOrderStmt.executeQuery().getInt(1);
+      int displayOrder;
+      if (project.displayOrder() != null) {
+        displayOrder = project.displayOrder();
+      } else {
+        try (ResultSet resultSet = nextOrderStmt.executeQuery()) {
+          resultSet.next();
+          displayOrder = resultSet.getInt(1);
+        }
+      }
       stmt.setInt(6, displayOrder);
 
       stmt.executeUpdate();
