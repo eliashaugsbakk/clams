@@ -88,19 +88,23 @@ Deletes a post.
 
 ### `GET /api/projects`
 
-Returns all projects, including their numeric IDs.
+Returns all projects, including their numeric IDs and `displayOrder`, sorted by
+`displayOrder` ascending and then ID ascending.
 
 ### `POST /api/projects`
 
 Creates a project. JSON fields are `name`, `readMoreUrl`, `gitUrl`,
-`gitHubUrl`, and `description`.
+`gitHubUrl`, `description`, and optional `displayOrder`. Lower display order
+values appear first. If omitted, a new project is appended after existing
+projects.
 
 Returns `201 Created` with an empty response body. `name` is required; the
 other fields are optional.
 
 ### `PUT /api/projects/{id}`
 
-Updates a project using the same fields as creation.
+Updates a project using the same fields as creation. Omitting `displayOrder`
+preserves the current order.
 
 Returns `204 No Content` when the project exists and is updated.
 

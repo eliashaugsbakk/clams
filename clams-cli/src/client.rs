@@ -39,6 +39,8 @@ pub struct Project {
     #[serde(rename = "gitHubUrl")]
     pub github_url: Option<String>,
     pub description: Option<String>,
+    #[serde(rename = "displayOrder")]
+    pub display_order: Option<i32>,
 }
 
 #[derive(Debug, Serialize)]

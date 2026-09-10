@@ -10,6 +10,22 @@ fn prompt(
     id: Option<i64>,
     existing: Option<&Project>,
 ) -> Result<Project, Box<dyn std::error::Error>> {
+    let display_order: String = Input::new()
+        .with_prompt("Display order (lower numbers first, blank appends)")
+        .with_initial_text(
+            existing
+                .and_then(|p| p.display_order)
+                .map(|order| order.to_string())
+                .unwrap_or_default(),
+        )
+        .allow_empty(true)
+        .interact_text()?;
+    let display_order = if display_order.trim().is_empty() {
+        None
+    } else {
+        Some(display_order.parse::<i32>()?)
+    };
+
     Ok(Project {
         id,
         name: Input::new()
@@ -52,6 +68,7 @@ fn prompt(
             )
             .interact_text()
             .map(Some)?,
+        display_order,
     })
 }
 
