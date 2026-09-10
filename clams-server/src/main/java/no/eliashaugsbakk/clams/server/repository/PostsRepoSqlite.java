@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
@@ -126,14 +127,14 @@ public class PostsRepoSqlite implements PostsRepo {
   }
 
   @Override
-  public void addPost(Post post) {
+  public long addPost(Post post) {
     String sql = """
         INSERT INTO posts (slug, title, content, summary, published, last_edited, is_published)
         VALUES (?, ?, ?, ?, ?, ?, ?)
         """;
 
     try (Connection conn = manager.getConnection();
-        PreparedStatement stmt = conn.prepareStatement(sql)) {
+        PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
       stmt.setString(1, post.slug());
       stmt.setString(2, post.title());
@@ -144,6 +145,12 @@ public class PostsRepoSqlite implements PostsRepo {
       stmt.setBoolean(7, post.isPublished());
 
       stmt.executeUpdate();
+      try (ResultSet generatedKeys = stmt.getGeneratedKeys()) {
+        if (generatedKeys.next()) {
+          return generatedKeys.getLong(1);
+        }
+      }
+      throw new RepoException("Post was inserted without a generated ID.");
 
     } catch (SQLException e) {
       throw new RepoException("Error adding posts post: " + post.slug(), e);

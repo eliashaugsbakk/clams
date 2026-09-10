@@ -51,7 +51,10 @@ pub fn upload(
     };
     match id {
         Some(existing) => client.update_post(existing, &payload)?,
-        None => client.create_post(&payload)?,
+        None => {
+            let created = client.create_post(&payload)?;
+            println!("Created post with ID {}.", created.id);
+        }
     }
     println!("Blog post saved.");
     Ok(())

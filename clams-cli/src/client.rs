@@ -53,6 +53,12 @@ pub struct PostPayload {
     pub is_published: bool,
 }
 
+#[derive(Debug, Deserialize)]
+pub struct CreatedPost {
+    pub id: i64,
+    pub slug: String,
+}
+
 pub struct ApiClient {
     base_url: String,
     http: Client,
@@ -141,15 +147,17 @@ impl ApiClient {
         Err(format!("Image deletion failed ({status}): {message}").into())
     }
 
-    pub fn create_post(&self, payload: &PostPayload) -> Result<(), Box<dyn std::error::Error>> {
-        self.request(
+    pub fn create_post(
+        &self,
+        payload: &PostPayload,
+    ) -> Result<CreatedPost, Box<dyn std::error::Error>> {
+        let response = self.request(
             self.http
                 .post(format!("{}/api/posts", self.base_url))
                 .json(payload),
         )
-        .send()?
-        .error_for_status()?;
-        Ok(())
+        .send()?;
+        self.json(response)
     }
 
     pub fn update_post(

@@ -33,8 +33,8 @@ public class PostController {
     if (slug.isBlank()) {
       throw new io.javalin.http.BadRequestResponse("The title must contain letters or numbers.");
     }
-    postsRepo.addPost(new Post(newPost, slug));
-    ctx.status(HttpStatus.CREATED);
+    long id = postsRepo.addPost(new Post(newPost, slug));
+    ctx.status(HttpStatus.CREATED).json(java.util.Map.of("id", id, "slug", slug));
   }
 
   public void handlePutPost(Context ctx) {

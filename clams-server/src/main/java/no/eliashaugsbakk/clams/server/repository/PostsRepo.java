@@ -10,7 +10,7 @@ public interface PostsRepo {
   Optional<Post> getPost(long id);
   List<PostMetaData> searchPostsBody(String query);
 
-  void addPost(Post post);
+  long addPost(Post post);
   void updatePost(Post post);
   boolean deletePost(long id);
   boolean existsPostBySlug(String slug);

@@ -73,7 +73,14 @@ Creates a post. JSON body:
 }
 ```
 
-Returns `201 Created` with an empty response body.
+Returns `201 Created` with the immutable post ID and generated slug:
+
+```json
+{
+  "id": 42,
+  "slug": "post-title"
+}
+```
 
 ### `PUT /api/posts/{id}`
 
