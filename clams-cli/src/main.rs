@@ -114,9 +114,9 @@ fn print_images(client: &client::ApiClient) -> Result<(), Box<dyn std::error::Er
         println!(
             "{}\t{}\t{}\t{}\t/media/{}",
             image.uuid,
-            image.original_filename,
-            image.content_type,
-            image.time_uploaded,
+            image.original_filename.as_deref().unwrap_or("(unnamed)"),
+            image.content_type.as_deref().unwrap_or("(unknown type)"),
+            image.time_uploaded.as_deref().unwrap_or("(unknown time)"),
             image.uuid
         );
     }

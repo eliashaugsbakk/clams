@@ -14,31 +14,44 @@ fn prompt(
         id,
         name: Input::new()
             .with_prompt("Name")
-            .with_initial_text(existing.map(|p| p.name.clone()).unwrap_or_default())
-            .interact_text()?,
+            .with_initial_text(existing.and_then(|p| p.name.clone()).unwrap_or_default())
+            .interact_text()
+            .map(Some)?,
         read_more_url: Input::new()
             .with_prompt("Read more URL")
             .with_initial_text(
                 existing
-                    .map(|p| p.read_more_url.clone())
+                    .and_then(|p| p.read_more_url.clone())
                     .unwrap_or_default(),
             )
             .allow_empty(true)
-            .interact_text()?,
+            .interact_text()
+            .map(Some)?,
         git_url: Input::new()
             .with_prompt("Git URL")
-            .with_initial_text(existing.map(|p| p.git_url.clone()).unwrap_or_default())
+            .with_initial_text(existing.and_then(|p| p.git_url.clone()).unwrap_or_default())
             .allow_empty(true)
-            .interact_text()?,
+            .interact_text()
+            .map(Some)?,
         github_url: Input::new()
             .with_prompt("GitHub URL")
-            .with_initial_text(existing.map(|p| p.github_url.clone()).unwrap_or_default())
+            .with_initial_text(
+                existing
+                    .and_then(|p| p.github_url.clone())
+                    .unwrap_or_default(),
+            )
             .allow_empty(true)
-            .interact_text()?,
+            .interact_text()
+            .map(Some)?,
         description: Input::new()
             .with_prompt("Description")
-            .with_initial_text(existing.map(|p| p.description.clone()).unwrap_or_default())
-            .interact_text()?,
+            .with_initial_text(
+                existing
+                    .and_then(|p| p.description.clone())
+                    .unwrap_or_default(),
+            )
+            .interact_text()
+            .map(Some)?,
     })
 }
 
@@ -103,7 +116,7 @@ fn select_project(
         .map(|project| {
             format!(
                 "{} (ID: {})",
-                project.name,
+                project.name.as_deref().unwrap_or("(unnamed project)"),
                 project
                     .id
                     .map_or_else(|| "unknown".to_string(), |id| id.to_string())
@@ -120,7 +133,10 @@ fn select_project(
 fn remove_project(client: &ApiClient, project: &Project) -> Result<(), Box<dyn std::error::Error>> {
     let id = project.id.ok_or("Selected project has no ID")?;
     if Confirm::new()
-        .with_prompt(format!("Remove project '{}' (ID {id})?", project.name))
+        .with_prompt(format!(
+            "Remove project '{}' (ID {id})?",
+            project.name.as_deref().unwrap_or("(unnamed project)")
+        ))
         .default(false)
         .interact()?
     {

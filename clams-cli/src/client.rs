@@ -11,9 +11,9 @@ use std::{fs, path::Path};
 #[derive(Debug, Deserialize)]
 pub struct ImageResponse {
     pub uuid: String,
-    pub original_filename: String,
-    pub content_type: String,
-    pub time_uploaded: String,
+    pub original_filename: Option<String>,
+    pub content_type: Option<String>,
+    pub time_uploaded: Option<String>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -24,14 +24,14 @@ pub struct UploadResponse {
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Project {
     pub id: Option<i64>,
-    pub name: String,
+    pub name: Option<String>,
     #[serde(rename = "readMoreUrl")]
-    pub read_more_url: String,
+    pub read_more_url: Option<String>,
     #[serde(rename = "gitUrl")]
-    pub git_url: String,
+    pub git_url: Option<String>,
     #[serde(rename = "gitHubUrl")]
-    pub github_url: String,
-    pub description: String,
+    pub github_url: Option<String>,
+    pub description: Option<String>,
 }
 
 #[derive(Debug, Serialize)]
