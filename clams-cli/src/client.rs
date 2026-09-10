@@ -154,12 +154,12 @@ impl ApiClient {
 
     pub fn update_post(
         &self,
-        slug: &str,
+        id: i64,
         payload: &PostPayload,
     ) -> Result<(), Box<dyn std::error::Error>> {
         self.request(
             self.http
-                .put(format!("{}/api/posts/{slug}", self.base_url))
+                .put(format!("{}/api/posts/{id}", self.base_url))
                 .json(payload),
         )
         .send()?
@@ -167,10 +167,10 @@ impl ApiClient {
         Ok(())
     }
 
-    pub fn delete_post(&self, slug: &str) -> Result<(), Box<dyn std::error::Error>> {
+    pub fn delete_post(&self, id: i64) -> Result<(), Box<dyn std::error::Error>> {
         self.request(
             self.http
-                .delete(format!("{}/api/posts/{slug}", self.base_url)),
+                .delete(format!("{}/api/posts/{id}", self.base_url)),
         )
         .send()?
         .error_for_status()?;

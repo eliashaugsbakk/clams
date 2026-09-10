@@ -7,12 +7,12 @@ import no.eliashaugsbakk.clams.server.model.PostMetaData;
 
 public interface PostsRepo {
   List<PostMetaData> listPostsMetaData();
-  Optional<Post> getPost(String slug);
+  Optional<Post> getPost(long id);
   List<PostMetaData> searchPostsBody(String query);
 
   void addPost(Post post);
   void updatePost(Post post);
-  boolean deletePost(String slug);
+  boolean deletePost(long id);
   boolean existsPostBySlug(String slug);
   List<String> findPostTitlesReferencing(String imageReference);
 }

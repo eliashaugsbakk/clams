@@ -1,6 +1,7 @@
 package no.eliashaugsbakk.clams.server.controller;
 
 import io.javalin.http.Context;
+import io.javalin.http.HttpStatus;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.Comparator;
@@ -31,7 +32,7 @@ public class PostsController {
   private final PostsRepo postsRepo;
   private final PostsSearchService postsSearchService;
 
-  public record PostItem(String title, String slug, String summary, String formattedDate, int year) {}
+  public record PostItem(long id, String title, String slug, String summary, String formattedDate, int year) {}
 
   public PostsController(SqliteManager sqliteManager) {
     this.postsRepo = new PostsRepoSqlite(sqliteManager);
@@ -46,7 +47,7 @@ public class PostsController {
 
   // BEGIN LLM EDIT: Added authenticated full-post retrieval and stable API not-found responses.
   public void handleGetPostApi(Context ctx) {
-    postsRepo.getPost(ctx.pathParam("slug"))
+    postsRepo.getPost(parseId(ctx))
         .ifPresentOrElse(ctx::json, () -> {
           ctx.status(404).json(Map.of(
               "error", "Not Found",
@@ -58,7 +59,8 @@ public class PostsController {
   // END LLM EDIT
 
   public void handleGetPost(Context ctx) {
-    var postOpt = postsRepo.getPost(ctx.pathParam("slug"));
+    long id = parseId(ctx);
+    var postOpt = postsRepo.getPost(id);
 
     if (postOpt.isEmpty()) {
       ctx.status(404);
@@ -69,6 +71,11 @@ public class PostsController {
 
     if (!post.isPublished()) {
       ctx.status(404);
+      return;
+    }
+
+    if (!ctx.pathParam("slug").equals(post.slug())) {
+      ctx.redirect("/posts/" + post.id() + "/" + post.slug(), HttpStatus.MOVED_PERMANENTLY);
       return;
     }
 
@@ -105,6 +112,7 @@ public class PostsController {
             Map.Entry::getKey,
             entry -> entry.getValue().stream()
                 .map(post -> new PostItem(
+                    post.id(),
                     post.title(),
                     post.slug(),
                     post.summary() != null ? post.summary() : "",
@@ -130,6 +138,7 @@ public class PostsController {
     List<PostItem> resultItems = results.stream()
         .filter(PostMetaData::isPublished)
         .map(post -> new PostItem(
+            post.id(),
             post.title(),
             post.slug(),
             post.summary() != null ? post.summary() : "",
@@ -146,6 +155,14 @@ public class PostsController {
             "results", resultItems,
             "results_count", resultItems.size()
         ));
+  }
+
+  private long parseId(Context ctx) {
+    try {
+      return Long.parseLong(ctx.pathParam("id"));
+    } catch (NumberFormatException e) {
+      throw new io.javalin.http.BadRequestResponse("Invalid post ID format");
+    }
   }
 
   private Map<Integer, List<PostMetaData>> groupPostsByYear(List<PostMetaData> posts) {

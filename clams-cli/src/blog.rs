@@ -13,7 +13,7 @@ use std::fs;
 pub fn upload(
     client: &ApiClient,
     dir: &str,
-    slug: Option<&str>,
+    id: Option<i64>,
 ) -> Result<(), Box<dyn std::error::Error>> {
     let package = collect_package(dir)?;
     let mut content = fs::read_to_string(&package.markdown_file)?;
@@ -49,7 +49,7 @@ pub fn upload(
         content,
         is_published: published,
     };
-    match slug {
+    match id {
         Some(existing) => client.update_post(existing, &payload)?,
         None => client.create_post(&payload)?,
     }
@@ -57,13 +57,13 @@ pub fn upload(
     Ok(())
 }
 
-pub fn delete(client: &ApiClient, slug: &str) -> Result<(), Box<dyn std::error::Error>> {
+pub fn delete(client: &ApiClient, id: i64) -> Result<(), Box<dyn std::error::Error>> {
     if Confirm::new()
-        .with_prompt(format!("Delete post '{slug}'?"))
+        .with_prompt(format!("Delete post with ID {id}?"))
         .default(false)
         .interact()?
     {
-        client.delete_post(slug)?;
+        client.delete_post(id)?;
         println!("Blog post deleted.");
     }
     Ok(())

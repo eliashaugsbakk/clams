@@ -58,7 +58,7 @@ public class RssController {
   }
 
   private static String itemXml(PostMetaData post, String siteUrl) {
-    String postUrl = siteUrl + "/posts/" + post.slug();
+    String postUrl = siteUrl + "/posts/" + post.id() + "/" + post.slug();
     String summary = post.summary() == null ? "" : post.summary();
     return """
         <item>

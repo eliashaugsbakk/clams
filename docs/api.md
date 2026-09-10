@@ -53,11 +53,12 @@ site_url=https://example.com
 
 ### `GET /api/posts`
 
-Returns post metadata for authenticated CLI selection and management.
+Returns post metadata, including the immutable numeric `id` and current SEO
+`slug`, for authenticated CLI selection and management.
 
-### `GET /api/posts/{slug}`
+### `GET /api/posts/{id}`
 
-Returns the full post for an authenticated slug.
+Returns the full post for an authenticated numeric ID.
 
 ### `POST /api/posts`
 
@@ -74,15 +75,21 @@ Creates a post. JSON body:
 
 Returns `201 Created` with an empty response body.
 
-### `PUT /api/posts/{slug}`
+### `PUT /api/posts/{id}`
 
-Updates a post using the same JSON body as creation.
+Updates a post selected by immutable numeric ID. The slug is generated when
+the post is created and is not used as the technical identity.
 
 Returns `204 No Content` when the post exists and is updated.
 
-### `DELETE /api/posts/{slug}`
+### `DELETE /api/posts/{id}`
 
-Deletes a post.
+Deletes a post selected by immutable numeric ID.
+
+Public post URLs use the format `/posts/{id}/{slug}`. The ID resolves the post;
+the slug is a readable, SEO-oriented URL component. If the slug is stale but
+the ID exists, the server redirects to the current canonical URL. Slug-only
+post URLs are not supported.
 
 ## Projects
 

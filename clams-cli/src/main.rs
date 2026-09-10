@@ -44,8 +44,8 @@ enum Command {
 #[derive(Subcommand)]
 enum BlogAction {
     Upload { dir: String },
-    Edit { slug: String, dir: String },
-    Delete { slug: String },
+    Edit { id: i64, dir: String },
+    Delete { id: i64 },
 }
 
 #[derive(Subcommand)]
@@ -77,8 +77,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         (Some(dir), None) => blog::upload(&client, &dir, None)?,
         (_, Some(Command::Blog { action })) => match action {
             BlogAction::Upload { dir } => blog::upload(&client, &dir, None)?,
-            BlogAction::Edit { slug, dir } => blog::upload(&client, &dir, Some(&slug))?,
-            BlogAction::Delete { slug } => blog::delete(&client, &slug)?,
+            BlogAction::Edit { id, dir } => blog::upload(&client, &dir, Some(id))?,
+            BlogAction::Delete { id } => blog::delete(&client, id)?,
         },
         (_, Some(Command::Project { action })) => match action {
             ProjectAction::Add => projects::add(&client)?,
@@ -173,19 +173,19 @@ fn blog_menu(client: &client::ApiClient) -> Result<(), Box<dyn std::error::Error
             blog::upload(client, &dir, None)?;
         }
         1 => {
-            let slug = Input::<String>::new()
-                .with_prompt("Post slug")
+            let id = Input::<i64>::new()
+                .with_prompt("Post ID")
                 .interact_text()?;
             let dir = Input::<String>::new()
                 .with_prompt("Blog directory")
                 .interact_text()?;
-            blog::upload(client, &dir, Some(&slug))?;
+            blog::upload(client, &dir, Some(id))?;
         }
         2 => {
-            let slug = Input::<String>::new()
-                .with_prompt("Post slug")
+            let id = Input::<i64>::new()
+                .with_prompt("Post ID")
                 .interact_text()?;
-            blog::delete(client, &slug)?;
+            blog::delete(client, id)?;
         }
         _ => {}
     }

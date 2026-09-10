@@ -86,7 +86,7 @@ public class AppRoutes implements EndpointGroup {
 
     path("posts", () -> {
       get(appContext.getPostsController()::handleGetPosts);
-      get("{slug}", appContext.getPostsController()::handleGetPost);
+      get("{id}/{slug}", appContext.getPostsController()::handleGetPost);
     });
 
     path("projects", () -> get(appContext.getProjectsController()::handleGetProjects));
@@ -120,11 +120,11 @@ public class AppRoutes implements EndpointGroup {
       });
 
       post("posts", appContext.getPostController()::handlePostPost);
-      put("posts/{slug}", appContext.getPostController()::handlePutPost);
-      delete("posts/{slug}", appContext.getPostController()::handleDeletePost);
+      put("posts/{id}", appContext.getPostController()::handlePutPost);
+      delete("posts/{id}", appContext.getPostController()::handleDeletePost);
       // BEGIN LLM EDIT: Added authenticated post listing and retrieval for CLI workflows.
       get("posts", appContext.getPostsController()::handleGetPostsApi);
-      get("posts/{slug}", appContext.getPostsController()::handleGetPostApi);
+      get("posts/{id}", appContext.getPostsController()::handleGetPostApi);
       // END LLM EDIT
 
       get("projects", appContext.getProjectsController()::handleGetProjectsApi);

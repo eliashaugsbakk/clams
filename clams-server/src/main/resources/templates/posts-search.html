@@ -28,7 +28,7 @@
                 {% for post in results %}
                     <li class="search-result-item">
                         <span class="post-date">{{ post.formattedDate }}</span>
-                        <a href="/posts/{{ post.slug }}">{{ post.title }}</a>
+                        <a href="/posts/{{ post.id }}/{{ post.slug }}">{{ post.title }}</a>
                         {% if post.summary is not empty %}
                             <br>
                             <span class="search-result-summary">-- {{ post.summary }}</span>

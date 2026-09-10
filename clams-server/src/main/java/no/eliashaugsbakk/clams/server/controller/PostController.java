@@ -38,11 +38,11 @@ public class PostController {
   }
 
   public void handlePutPost(Context ctx) {
-    String slug = ctx.pathParam("slug");
+    long id = parseId(ctx);
     PostDTO updatedPost = ctx.bodyAsClass(PostDTO.class);
     validatePost(updatedPost);
 
-    postsRepo.getPost(slug)
+    postsRepo.getPost(id)
         .ifPresentOrElse(
             existing -> {
               postsRepo.updatePost(Post.fromUpdated(existing, updatedPost));
@@ -52,10 +52,18 @@ public class PostController {
   }
 
   public void handleDeletePost(Context ctx) {
-    if (!postsRepo.deletePost(ctx.pathParam("slug"))) {
+    if (!postsRepo.deletePost(parseId(ctx))) {
       ErrorResponses.notFound(ctx, "Post not found.");
     } else {
       ctx.status(HttpStatus.NO_CONTENT);
+    }
+  }
+
+  private long parseId(Context ctx) {
+    try {
+      return Long.parseLong(ctx.pathParam("id"));
+    } catch (NumberFormatException e) {
+      throw new io.javalin.http.BadRequestResponse("Invalid post ID format");
     }
   }
 

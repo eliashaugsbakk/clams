@@ -21,7 +21,7 @@ public class PostsRepoSqlite implements PostsRepo {
   @Override
   public List<PostMetaData> listPostsMetaData() {
     String sql = """
-        SELECT title, slug, summary, published, last_edited, is_published
+        SELECT id, title, slug, summary, published, last_edited, is_published
         FROM posts
         ORDER BY published DESC
         """;
@@ -33,6 +33,7 @@ public class PostsRepoSqlite implements PostsRepo {
         ResultSet resultSet = stmt.executeQuery()) {
 
       while (resultSet.next()) {
+        long id = resultSet.getLong("id");
         String title = resultSet.getString("title");
         String slug = resultSet.getString("slug");
         String summary = resultSet.getString("summary");
@@ -41,7 +42,7 @@ public class PostsRepoSqlite implements PostsRepo {
         Instant lastEdit = (lastEditRaw != null) ? Instant.parse(lastEditRaw) : null;
         boolean isPublished = resultSet.getBoolean("is_published");
 
-        posts.add(new PostMetaData(title, slug, summary, published, lastEdit, isPublished));
+        posts.add(new PostMetaData(id, title, slug, summary, published, lastEdit, isPublished));
       }
 
       return posts;
@@ -52,20 +53,21 @@ public class PostsRepoSqlite implements PostsRepo {
   }
 
   @Override
-  public Optional<Post> getPost(String slug) {
+  public Optional<Post> getPost(long id) {
     String sql = """
-        SELECT title, slug, summary, content, published, last_edited, is_published
+        SELECT id, title, slug, summary, content, published, last_edited, is_published
         FROM posts
-        WHERE slug = ?
+        WHERE id = ?
         """;
 
     try (Connection conn = manager.getConnection();
         PreparedStatement stmt = conn.prepareStatement(sql)) {
 
-      stmt.setString(1, slug);
+      stmt.setLong(1, id);
 
       try (ResultSet resultSet = stmt.executeQuery()) {
         if (resultSet.next()) {
+          long postId = resultSet.getLong("id");
           String title = resultSet.getString("title");
           String postSlug = resultSet.getString("slug");
           String summary = resultSet.getString("summary");
@@ -74,20 +76,21 @@ public class PostsRepoSqlite implements PostsRepo {
           Instant lastEdited = Instant.parse(resultSet.getString("last_edited"));
           boolean isPublished = resultSet.getBoolean("is_published");
 
-          return Optional.of(new Post(title, postSlug, summary, published, lastEdited, content, isPublished));
+          return Optional.of(new Post(postId, title, postSlug, summary, published, lastEdited, content,
+              isPublished));
         }
         return Optional.empty();
       }
 
     } catch (SQLException e) {
-      throw new RepoException("Error fetching full post by slug: " + slug, e);
+      throw new RepoException("Error fetching full post by ID: " + id, e);
     }
   }
 
   @Override
   public List<PostMetaData> searchPostsBody(String query) {
     String sql = """
-        SELECT title, slug, summary, published, last_edited, is_published
+        SELECT id, title, slug, summary, published, last_edited, is_published
         FROM posts
         WHERE content LIKE ?
         ORDER BY published DESC
@@ -103,6 +106,7 @@ public class PostsRepoSqlite implements PostsRepo {
 
       try (ResultSet resultSet = stmt.executeQuery()) {
         while (resultSet.next()) {
+          long id = resultSet.getLong("id");
           String title = resultSet.getString("title");
           String slug = resultSet.getString("slug");
           String summary = resultSet.getString("summary");
@@ -110,7 +114,7 @@ public class PostsRepoSqlite implements PostsRepo {
           Instant lastEdit = Instant.parse(resultSet.getString("last_edited"));
           boolean isPublished = resultSet.getBoolean("is_published");
 
-          posts.add(new PostMetaData(title, slug, summary, published, lastEdit, isPublished));
+          posts.add(new PostMetaData(id, title, slug, summary, published, lastEdit, isPublished));
         }
       }
 
@@ -151,7 +155,7 @@ public class PostsRepoSqlite implements PostsRepo {
     String sql = """
         UPDATE posts
         SET title = ?, content = ?, summary = ?, published = ?, last_edited = ?, is_published = ?
-        WHERE slug = ?
+        WHERE id = ?
         """;
 
     try (Connection conn = manager.getConnection();
@@ -163,31 +167,31 @@ public class PostsRepoSqlite implements PostsRepo {
       stmt.setString(4, post.timePublished().toString());
       stmt.setString(5, post.lastEdited().toString());
       stmt.setBoolean(6, post.isPublished());
-      stmt.setString(7, post.slug());
+      stmt.setLong(7, post.id());
 
       stmt.executeUpdate();
 
     } catch (SQLException e) {
-      throw new RepoException("Error updating posts post: " + post.slug(), e);
+      throw new RepoException("Error updating post: " + post.id(), e);
     }
   }
 
   @Override
-  public boolean deletePost(String slug) {
+  public boolean deletePost(long id) {
     String sql = """
         DELETE FROM posts
-        WHERE slug = ?
+        WHERE id = ?
         """;
 
     try (Connection conn = manager.getConnection();
         PreparedStatement stmt = conn.prepareStatement(sql)) {
 
-      stmt.setString(1, slug);
+      stmt.setLong(1, id);
 
       int rowsAffected = stmt.executeUpdate();
       return rowsAffected > 0;
     } catch (SQLException e) {
-      throw new RepoException("Error deleting post " + slug + ": ", e);
+      throw new RepoException("Error deleting post " + id + ": ", e);
     }
   }
 
