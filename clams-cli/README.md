@@ -69,7 +69,10 @@ Markdown with public `/media/<uuid>` URLs. The Markdown file is updated locally
 after each successful upload.
 
 Running `clams-cli` without arguments provides the common operations through an
-interactive menu. `-h` and `--help` show the command reference.
+interactive menu organized into Blog posts, Projects, Images, and
+Configuration sections. Project edit and removal show a list of projects and
+let you select one by name instead of requiring you to look up its numeric ID.
+`-h` and `--help` show the command reference.
 
 ## Source layout
 

@@ -79,62 +79,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             print_images(&client)?;
         }
         (_, Some(Command::Config)) => unreachable!("configuration is handled before API setup"),
-        (None, None) => match Select::new()
-            .with_prompt("What would you like to manage?")
-            .items(&[
-                "Blog post upload",
-                "Blog post edit",
-                "Blog post delete",
-                "Image overview",
-                "Add project",
-                "Edit project",
-                "Remove project",
-                "Update configuration",
-                "Exit",
-            ])
-            .default(0)
-            .interact()?
-        {
-            0 => {
-                let dir = dialoguer::Input::<String>::new()
-                    .with_prompt("Blog directory")
-                    .interact_text()?;
-                blog::upload(&client, &dir, None)?;
-            }
-            1 => {
-                let slug = Input::<String>::new()
-                    .with_prompt("Post slug")
-                    .interact_text()?;
-                let dir = Input::<String>::new()
-                    .with_prompt("Blog directory")
-                    .interact_text()?;
-                blog::upload(&client, &dir, Some(&slug))?;
-            }
-            2 => {
-                let slug = Input::<String>::new()
-                    .with_prompt("Post slug")
-                    .interact_text()?;
-                blog::delete(&client, &slug)?;
-            }
-            3 => print_images(&client)?,
-            4 => projects::add(&client)?,
-            5 => {
-                let id = Input::<i64>::new()
-                    .with_prompt("Project ID")
-                    .interact_text()?;
-                projects::edit(&client, id)?;
-            }
-            6 => {
-                let id = Input::<i64>::new()
-                    .with_prompt("Project ID")
-                    .interact_text()?;
-                projects::remove(&client, id)?;
-            }
-            7 => {
-                update_configuration(&mut config)?;
-            }
-            _ => {}
-        },
+        (None, None) => interactive_menu(&client, &mut config)?,
     }
     Ok(())
 }
@@ -174,6 +119,75 @@ fn print_images(client: &client::ApiClient) -> Result<(), Box<dyn std::error::Er
             image.time_uploaded,
             image.uuid
         );
+    }
+    Ok(())
+}
+
+fn interactive_menu(
+    client: &client::ApiClient,
+    config: &mut config::Config,
+) -> Result<(), Box<dyn std::error::Error>> {
+    loop {
+        match Select::new()
+            .with_prompt("What would you like to manage?")
+            .items(&["Blog posts", "Projects", "Images", "Configuration", "Exit"])
+            .default(0)
+            .interact()?
+        {
+            0 => blog_menu(client)?,
+            1 => project_menu(client)?,
+            2 => print_images(client)?,
+            3 => update_configuration(config)?,
+            _ => break,
+        }
+    }
+    Ok(())
+}
+
+fn blog_menu(client: &client::ApiClient) -> Result<(), Box<dyn std::error::Error>> {
+    match Select::new()
+        .with_prompt("Blog posts")
+        .items(&["Upload post", "Edit post", "Delete post", "Back"])
+        .default(0)
+        .interact()?
+    {
+        0 => {
+            let dir = Input::<String>::new()
+                .with_prompt("Blog directory")
+                .interact_text()?;
+            blog::upload(client, &dir, None)?;
+        }
+        1 => {
+            let slug = Input::<String>::new()
+                .with_prompt("Post slug")
+                .interact_text()?;
+            let dir = Input::<String>::new()
+                .with_prompt("Blog directory")
+                .interact_text()?;
+            blog::upload(client, &dir, Some(&slug))?;
+        }
+        2 => {
+            let slug = Input::<String>::new()
+                .with_prompt("Post slug")
+                .interact_text()?;
+            blog::delete(client, &slug)?;
+        }
+        _ => {}
+    }
+    Ok(())
+}
+
+fn project_menu(client: &client::ApiClient) -> Result<(), Box<dyn std::error::Error>> {
+    match Select::new()
+        .with_prompt("Projects")
+        .items(&["Add project", "Edit project", "Remove project", "Back"])
+        .default(0)
+        .interact()?
+    {
+        0 => projects::add(client)?,
+        1 => projects::edit_selected(client)?,
+        2 => projects::remove_selected(client)?,
+        _ => {}
     }
     Ok(())
 }
