@@ -217,25 +217,48 @@ public class MediaController {
     }
     // END LLM EDIT
 
-    try {
-      boolean deleted = mediaRepo.deleteImage(uuid);
-      if (!deleted) {
-        ErrorResponses.notFound(ctx, "Image not found.");
-        return;
-      }
-    } catch (Exception e) {
-      ErrorResponses.serverError(ctx, "Failed to delete image metadata from database.");
+    Path path = Path.of(appConfig.getStorageLocation(), "images", uuid + ".jpeg");
+    if (mediaRepo.getImage(uuid).isEmpty()) {
+      ErrorResponses.notFound(ctx, "Image not found.");
       return;
     }
 
-    Path path = Path.of(appConfig.getStorageLocation(), "images", uuid + ".jpeg");
+    byte[] imageBytes = null;
     try {
-      Files.deleteIfExists(path);
+      if (Files.exists(path)) {
+        imageBytes = Files.readAllBytes(path);
+        Files.delete(path);
+      }
     } catch (IOException e) {
       ErrorResponses.serverError(ctx, "Failed to delete image file from storage.");
       return;
     }
 
+    try {
+      if (!mediaRepo.deleteImage(uuid)) {
+        restoreImage(path, imageBytes);
+        ErrorResponses.notFound(ctx, "Image not found.");
+        return;
+      }
+    } catch (Exception e) {
+      restoreImage(path, imageBytes);
+      ErrorResponses.serverError(ctx, "Failed to delete image metadata from database.");
+      return;
+    }
+
     ctx.status(204);
   }
+
+  // BEGIN LLM EDIT: Restore the file if metadata deletion fails after file removal.
+  private static void restoreImage(Path path, byte[] imageBytes) {
+    if (imageBytes == null) {
+      return;
+    }
+    try {
+      Files.write(path, imageBytes);
+    } catch (IOException ignored) {
+      // The original database record remains, so the failure is surfaced by the API response.
+    }
+  }
+  // END LLM EDIT
 }
