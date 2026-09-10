@@ -18,18 +18,24 @@ public class ProjectsRepoSqlite implements ProjectsRepo {
   @Override
   public void addProject(Project project) {
     String sql = """
-        INSERT INTO projects (name, read_more_url, git_url, git_hub_url, description)
-        VALUES (?, ?, ?, ?, ?)
+        INSERT INTO projects (name, read_more_url, git_url, git_hub_url, description, display_order)
+        VALUES (?, ?, ?, ?, ?, ?)
         """;
+    String nextOrderSql = "SELECT COALESCE(MAX(display_order), -1) + 1 FROM projects";
 
     try (Connection conn = manager.getConnection();
-        PreparedStatement stmt = conn.prepareStatement(sql)) {
+        PreparedStatement stmt = conn.prepareStatement(sql);
+        PreparedStatement nextOrderStmt = conn.prepareStatement(nextOrderSql)) {
 
       stmt.setString(1, project.name());
       stmt.setString(2, project.readMoreUrl());
       stmt.setString(3, project.gitUrl());
       stmt.setString(4, project.gitHubUrl());
       stmt.setString(5, project.description());
+      int displayOrder = project.displayOrder() != null
+          ? project.displayOrder()
+          : nextOrderStmt.executeQuery().getInt(1);
+      stmt.setInt(6, displayOrder);
 
       stmt.executeUpdate();
     } catch (SQLException e) {
@@ -42,6 +48,7 @@ public class ProjectsRepoSqlite implements ProjectsRepo {
     String sql = """
         UPDATE projects
         SET name = ?, read_more_url = ?, git_url = ?, git_hub_url = ?, description = ?
+            , display_order = COALESCE(?, display_order)
         WHERE id = ?
         """;
 
@@ -53,7 +60,8 @@ public class ProjectsRepoSqlite implements ProjectsRepo {
       stmt.setString(3, project.gitUrl());
       stmt.setString(4, project.gitHubUrl());
       stmt.setString(5, project.description());
-      stmt.setLong(6, project.id());
+      stmt.setObject(6, project.displayOrder());
+      stmt.setLong(7, project.id());
 
       int rowsUpdated = stmt.executeUpdate();
       return rowsUpdated > 0;
@@ -84,8 +92,9 @@ public class ProjectsRepoSqlite implements ProjectsRepo {
   @Override
   public List<Project> getAllProjects() {
     String sql = """
-        SELECT id, name, read_more_url, git_url, git_hub_url, description
+        SELECT id, name, read_more_url, git_url, git_hub_url, description, display_order
         FROM projects
+        ORDER BY display_order ASC, id ASC
         """;
 
     List<Project> projects = new ArrayList<>();
@@ -101,8 +110,10 @@ public class ProjectsRepoSqlite implements ProjectsRepo {
         String git_url = resultSet.getString("git_url");
         String git_hub_url = resultSet.getString("git_hub_url");
         String description = resultSet.getString("description");
+        int displayOrder = resultSet.getInt("display_order");
 
-        projects.add(new Project(id, name, read_more_url, git_url, git_hub_url, description));
+        projects.add(new Project(id, name, read_more_url, git_url, git_hub_url, description,
+            displayOrder));
       }
 
       return projects;

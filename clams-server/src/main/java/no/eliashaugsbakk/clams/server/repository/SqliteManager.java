@@ -63,6 +63,20 @@ public class SqliteManager implements AutoCloseable {
       stmt.execute(posts);
       stmt.execute(images);
       stmt.execute(projects);
+      // BEGIN LLM EDIT: Migrate existing installations to the additive ordering column.
+      try (var columns = stmt.executeQuery("PRAGMA table_info(projects)")) {
+        boolean hasDisplayOrder = false;
+        while (columns.next()) {
+          if ("display_order".equals(columns.getString("name"))) {
+            hasDisplayOrder = true;
+            break;
+          }
+        }
+        if (!hasDisplayOrder) {
+          stmt.execute("ALTER TABLE projects ADD COLUMN display_order INTEGER NOT NULL DEFAULT 0");
+        }
+      }
+      // END LLM EDIT
 
     } catch (SQLException e) {
       throw new RepoException("Error while initializing database", e);

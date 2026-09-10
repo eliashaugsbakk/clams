@@ -54,7 +54,8 @@ public class ProjectController {
         updateProject.readMoreUrl(),
         updateProject.gitUrl(),
         updateProject.gitHubUrl(),
-        updateProject.description()
+        updateProject.description(),
+        updateProject.displayOrder()
     );
 
     boolean updated = projectsRepo.updateProject(projectToUpdate);
