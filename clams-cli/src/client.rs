@@ -26,6 +26,7 @@ pub struct UploadResponse {
     pub content_type: Option<String>,
     #[serde(rename = "timeUploaded")]
     pub time_uploaded: String,
+    pub warning: Option<String>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -107,7 +108,14 @@ impl ApiClient {
                     .multipart(form),
             )
             .send()?;
-        self.json(response)
+        let warning = response
+            .headers()
+            .get("X-Clams-Warning")
+            .and_then(|value| value.to_str().ok())
+            .map(str::to_owned);
+        let mut upload: UploadResponse = self.json(response)?;
+        upload.warning = warning;
+        Ok(upload)
     }
 
     pub fn list_images(&self) -> Result<Vec<ImageResponse>, Box<dyn std::error::Error>> {

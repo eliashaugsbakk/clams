@@ -35,6 +35,8 @@ public class App {
         config.routes.error(409, ctx -> ErrorResponses.conflict(ctx, "The request conflicts with existing data."));
         config.routes.error(415, ctx -> ErrorResponses.unsupportedMediaType(ctx,
             "The request media type is not supported."));
+        config.routes.error(413, ctx -> ErrorResponses.payloadTooLarge(ctx,
+            "The request payload is too large."));
         config.routes.error(500, ctx -> ErrorResponses.serverError(ctx, "An unexpected server error occurred."));
         // END LLM EDIT
 

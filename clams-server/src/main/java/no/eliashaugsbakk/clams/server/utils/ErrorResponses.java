@@ -39,6 +39,10 @@ public final class ErrorResponses {
     render(ctx, 415, message);
   }
 
+  public static void payloadTooLarge(Context ctx, String message) {
+    render(ctx, 413, message);
+  }
+
   public static void serverError(Context ctx, String message) {
     render(ctx, 500, message);
   }
@@ -71,6 +75,7 @@ public final class ErrorResponses {
       case 404 -> "Not Found";
       case 409 -> "Conflict";
       case 415 -> "Unsupported Media Type";
+      case 413 -> "Payload Too Large";
       default -> "Internal Server Error";
     };
   }

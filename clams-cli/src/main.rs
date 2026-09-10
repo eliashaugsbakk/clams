@@ -257,6 +257,9 @@ fn upload_image(client: &client::ApiClient, path: &str) -> Result<(), Box<dyn st
     );
     println!("Uploaded at: {}", upload.time_uploaded);
     println!("URL: {}", upload.url);
+    if let Some(warning) = upload.warning.as_deref() {
+        println!("Warning: {warning}");
+    }
     Ok(())
 }
 

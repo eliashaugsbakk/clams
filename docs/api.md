@@ -120,7 +120,9 @@ Returns `204 No Content` when the project exists and is deleted.
 ### `POST /api/media`
 
 Uploads a JPEG using a multipart form field named `image`. The server accepts
-images no larger than 2000x2000 pixels.
+images no larger than 2000x2000 pixels. Files larger than 5 MiB are accepted
+but return an `X-Clams-Warning` response header recommending compression.
+Files larger than 20 MiB are rejected with `413 Payload Too Large`.
 
 Successful response (`201`):
 

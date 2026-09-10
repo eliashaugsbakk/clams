@@ -30,6 +30,11 @@ import org.apache.commons.imaging.Imaging;
  */
 // END LLM EDIT
 public class MediaController {
+  // BEGIN LLM EDIT: Add advisory and hard upload-size thresholds for image safety.
+  private static final long IMAGE_WARNING_BYTES = 5L * 1024 * 1024;
+  private static final long IMAGE_MAX_BYTES = 20L * 1024 * 1024;
+  // END LLM EDIT
+
   private final MediaRepo mediaRepo;
   private final PostsRepo postsRepo;
   private final AppConfig appConfig;
@@ -56,6 +61,14 @@ public class MediaController {
 
     try (InputStream is = file.content()) {
       byte[] imageBytes = is.readAllBytes();
+      if (imageBytes.length > IMAGE_MAX_BYTES) {
+        ErrorResponses.payloadTooLarge(ctx, "Images must be no larger than 20 MiB.");
+        return;
+      }
+      if (imageBytes.length > IMAGE_WARNING_BYTES) {
+        ctx.header("X-Clams-Warning",
+            "Image is larger than 5 MiB; consider compressing it when practical.");
+      }
 
       try (ByteArrayInputStream bais = new ByteArrayInputStream(imageBytes)) {
         ImageInfo info = Imaging.getImageInfo(bais, file.filename());
