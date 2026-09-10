@@ -6,6 +6,7 @@ import no.eliashaugsbakk.clams.server.model.Post;
 import no.eliashaugsbakk.clams.server.model.PostDTO;
 import no.eliashaugsbakk.clams.server.repository.PostsRepo;
 import no.eliashaugsbakk.clams.server.service.SlugService;
+import no.eliashaugsbakk.clams.server.utils.ApiValidation;
 
 // BEGIN LLM EDIT: Added the following disclaimer while integrating the CLI post API.
 /**
@@ -26,13 +27,19 @@ public class PostController {
 
   public void handlePostPost(Context ctx) {
     PostDTO newPost = ctx.bodyAsClass(PostDTO.class);
-    postsRepo.addPost(new Post(newPost, slugService.toSlug(newPost.title())));
+    validatePost(newPost);
+    String slug = slugService.toSlug(newPost.title());
+    if (slug.isBlank()) {
+      throw new io.javalin.http.BadRequestResponse("The title must contain letters or numbers.");
+    }
+    postsRepo.addPost(new Post(newPost, slug));
     ctx.status(HttpStatus.CREATED);
   }
 
   public void handlePutPost(Context ctx) {
     String slug = ctx.pathParam("slug");
     PostDTO updatedPost = ctx.bodyAsClass(PostDTO.class);
+    validatePost(updatedPost);
 
     postsRepo.getPost(slug)
         .map(existing -> Post.fromUpdated(existing, updatedPost))
@@ -48,4 +55,12 @@ public class PostController {
       ctx.status(HttpStatus.NO_CONTENT);
     }
   }
+
+  // BEGIN LLM EDIT: Apply stable size and required-field constraints to post payloads.
+  private void validatePost(PostDTO post) {
+    ApiValidation.requiredText("title", post.title(), 200);
+    ApiValidation.requiredText("content", post.content(), 1_000_000);
+    ApiValidation.optionalText("summary", post.summary(), 1_000);
+  }
+  // END LLM EDIT
 }
