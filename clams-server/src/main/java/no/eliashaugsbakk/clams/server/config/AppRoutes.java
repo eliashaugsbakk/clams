@@ -90,6 +90,10 @@ public class AppRoutes implements EndpointGroup {
 
     path("projects", () -> get(appContext.getProjectsController()::handleGetProjects));
 
+    // BEGIN LLM EDIT: Added the public summary-only RSS feed endpoint.
+    get("/rss.xml", appContext.getRssController()::handleGetFeed);
+    // END LLM EDIT
+
     // BEGIN LLM EDIT: Added public image retrieval routes for browser-rendered blog content.
     path("media", () -> {
       get(appContext.getMediaController()::handleGetMediaIndex);

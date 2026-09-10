@@ -5,6 +5,7 @@ import no.eliashaugsbakk.clams.server.controller.PostsController;
 import no.eliashaugsbakk.clams.server.controller.MediaController;
 import no.eliashaugsbakk.clams.server.controller.PostController;
 import no.eliashaugsbakk.clams.server.controller.ProjectController;
+import no.eliashaugsbakk.clams.server.controller.RssController;
 import no.eliashaugsbakk.clams.server.repository.PostsRepo;
 import no.eliashaugsbakk.clams.server.repository.PostsRepoSqlite;
 import no.eliashaugsbakk.clams.server.repository.MediaRepo;
@@ -24,6 +25,7 @@ public class AppContext implements AutoCloseable {
   private final ProjectController projectController;
   private final AuthService authService;
   private final PageCache pageCache;
+  private final RssController rssController;
 
   public AppContext() {
     AppConfig appConfig = new AppConfig();
@@ -39,6 +41,9 @@ public class AppContext implements AutoCloseable {
     SlugService slugService = new SlugService(postsRepo);
 
     this.postsController = new PostsController(dbManager);
+    // BEGIN LLM EDIT: Wire the public summary RSS controller to the post repository and site URL.
+    this.rssController = new RssController(postsRepo, appConfig.getSiteUrl());
+    // END LLM EDIT
     this.mediaController = new MediaController(mediaRepo, appConfig);
     this.projectController = new ProjectController(projectsRepo);
     this.postController = new PostController(postsRepo, slugService);
@@ -52,6 +57,7 @@ public class AppContext implements AutoCloseable {
   public PostController getPostController() { return postController; }
   public AuthService getAuthService() { return authService; }
   public PageCache pageCache() { return pageCache; }
+  public RssController getRssController() { return rssController; }
 
   @Override
   public void close() {

@@ -70,7 +70,8 @@ public class AppConfig {
       try (BufferedWriter writer = Files.newBufferedWriter(configPath)) {
         writer.write(String.format("""
             storage_location=./data/
-            
+            site_url=
+
             authorization_token=%s
             """, token));
       }
@@ -93,4 +94,10 @@ public class AppConfig {
     }
     return token;
   }
+
+  // BEGIN LLM EDIT: Expose the configured public origin for absolute RSS URLs.
+  public String getSiteUrl() {
+    return properties.getProperty("site_url", "").trim().replaceAll("/+$", "");
+  }
+  // END LLM EDIT
 }
