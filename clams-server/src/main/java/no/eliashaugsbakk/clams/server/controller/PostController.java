@@ -13,8 +13,8 @@ import no.eliashaugsbakk.clams.server.utils.ErrorResponses;
 /**
  * Authenticated post mutation controller.
  *
- * <p>Disclaimer: This file was touched by an LLM while wiring the CLI's post API integration;
- * no post mutation behavior was intentionally changed here.</p>
+ * <p>Disclaimer: The authenticated post mutation changes in this file were written by an LLM
+ * to address posts by immutable numeric ID.</p>
  */
 // END LLM EDIT
 public class PostController {

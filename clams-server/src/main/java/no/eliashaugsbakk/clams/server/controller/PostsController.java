@@ -22,7 +22,7 @@ import no.eliashaugsbakk.clams.server.utils.MarkdownConverter;
  * Public and API post retrieval controller.
  *
  * <p>Disclaimer: The following changes were written by an LLM: authenticated handlers now return
- * post metadata and full posts by slug for CLI editing workflows.</p>
+ * post metadata and full posts by numeric ID, and public routes use ID-plus-slug URLs.</p>
  */
 // END LLM EDIT
 public class PostsController {

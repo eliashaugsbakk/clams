@@ -23,7 +23,9 @@
                 {% for post in group.value %}
                 <li class="post-list-item">
                     <span class="post-date">{{ post.formattedDate }}</span>
+                    {# BEGIN LLM EDIT: Use immutable post IDs with readable slugs in public links. #}
                     <a href="/posts/{{ post.id }}/{{ post.slug }}">{{ post.title }}</a>
+                    {# END LLM EDIT #}
                     {% if post.summary is not empty %}
                     <br>
                     <span class="search-result-summary">-- {{ post.summary }}</span>
