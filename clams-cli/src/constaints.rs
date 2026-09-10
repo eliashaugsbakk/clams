@@ -1,4 +1,8 @@
 
+//! Legacy CLI help text retained for compatibility.
+//!
+//! Disclaimer: This file was created and edited by an AI model.
+
 pub const HELP_MESSAGE: &str = "\
 clams-cli 0.1.0
 Content management CLI tool for blog posts and projects
