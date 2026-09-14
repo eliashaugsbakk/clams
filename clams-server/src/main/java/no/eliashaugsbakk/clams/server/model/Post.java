@@ -14,13 +14,18 @@ public record Post(Long id, String title, String slug, String summary, Instant c
                    Instant publishedAt, Instant updatedAt, String content, boolean isPublished) {
   public Post(PostDTO postDTO, String slug) {
     this(null, postDTO.title(), slug, postDTO.summary(), Instant.now(),
-        postDTO.isPublished() ? Instant.now() : null, Instant.now(), postDTO.content(), postDTO.isPublished());
+        postDTO.isPublished()
+            ? (postDTO.publishedAt() == null ? Instant.now() : postDTO.publishedAt())
+            : null,
+        Instant.now(), postDTO.content(), postDTO.isPublished());
   }
 
   public static Post fromUpdated(Post existing, PostDTO postDTO) {
     return new Post(existing.id(), postDTO.title(), existing.slug(), postDTO.summary(),
         existing.createdAt(), postDTO.isPublished()
-            ? (existing.publishedAt() == null ? Instant.now() : existing.publishedAt())
+            ? (postDTO.publishedAt() == null
+                ? (existing.publishedAt() == null ? Instant.now() : existing.publishedAt())
+                : postDTO.publishedAt())
             : null,
         Instant.now(),
         postDTO.content(), postDTO.isPublished());

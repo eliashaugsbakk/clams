@@ -70,9 +70,15 @@ Creates a post. JSON body:
   "title": "Post title",
   "summary": "Short summary",
   "content": "Markdown content",
-  "isPublished": true
+  "isPublished": true,
+  "publishedAt": "2024-05-14T18:30:00Z"
 }
 ```
+
+`publishedAt` is optional and must be an ISO-8601 timestamp when provided. For
+a new published post without `publishedAt`, the server uses the current time.
+When updating a published post, omitting it preserves the existing publication
+timestamp. Unpublishing clears the stored publication timestamp.
 
 Returns `201 Created` with the immutable post ID and generated slug:
 
