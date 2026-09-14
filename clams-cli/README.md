@@ -68,7 +68,9 @@ A blog directory must contain exactly one `.md` file and may contain `.jpeg`
 images. Images are validated against the server's 2000x2000 pixel limit,
 uploaded individually, and their filename references are replaced in the
 Markdown with public `/media/<uuid>` URLs. The Markdown file is updated locally
-after each successful upload.
+after each successful upload. When editing an existing post, the CLI fetches
+its current publication timestamp and uses it as the default; entering a
+different ISO-8601 timestamp changes the public publication date.
 
 Running `clams-cli` without arguments provides the common operations through an
 interactive menu organized into Blog posts, Projects, Images, and

@@ -51,6 +51,21 @@ pub struct PostPayload {
     pub content: String,
     #[serde(rename = "isPublished")]
     pub is_published: bool,
+    #[serde(rename = "publishedAt")]
+    pub published_at: Option<String>,
+}
+
+// BEGIN LLM EDIT: Model authenticated post retrieval for preserving editable publication dates.
+/**
+ * Authenticated post response used by the CLI edit workflow.
+ *
+ * Disclaimer: This response model was written by an LLM to support editable publication dates.
+ */
+// END LLM EDIT
+#[derive(Debug, Deserialize)]
+pub struct PostResponse {
+    #[serde(rename = "publishedAt")]
+    pub published_at: Option<String>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -159,6 +174,15 @@ impl ApiClient {
         .send()?;
         self.json(response)
     }
+
+    // BEGIN LLM EDIT: Fetch the existing publication timestamp before editing a post.
+    pub fn get_post(&self, id: i64) -> Result<PostResponse, Box<dyn std::error::Error>> {
+        let response = self
+            .request(self.http.get(format!("{}/api/posts/{id}", self.base_url)))
+            .send()?;
+        self.json(response)
+    }
+    // END LLM EDIT
 
     pub fn update_post(
         &self,

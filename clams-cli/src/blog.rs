@@ -15,6 +15,10 @@ pub fn upload(
     dir: &str,
     id: Option<i64>,
 ) -> Result<(), Box<dyn std::error::Error>> {
+    let existing_post = match id {
+        Some(existing) => Some(client.get_post(existing)?),
+        None => None,
+    };
     let package = collect_package(dir)?;
     let mut content = fs::read_to_string(&package.markdown_file)?;
     for image in &package.image_files {
@@ -41,13 +45,25 @@ pub fn upload(
         .interact_text()?;
     let published = Confirm::new()
         .with_prompt("Published?")
-        .default(true)
+        .default(existing_post.as_ref().is_none_or(|post| post.published_at.is_some()))
         .interact()?;
+    let published_at = match existing_post {
+        Some(post) if published => {
+            let timestamp: String = Input::new()
+                .with_prompt("Publication timestamp (ISO-8601)")
+                .default(post.published_at.unwrap_or_default())
+                .allow_empty(true)
+                .interact_text()?;
+            (!timestamp.trim().is_empty()).then_some(timestamp)
+        }
+        _ => None,
+    };
     let payload = PostPayload {
         title,
         summary,
         content,
         is_published: published,
+        published_at,
     };
     match id {
         Some(existing) => client.update_post(existing, &payload)?,
