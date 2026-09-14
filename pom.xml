@@ -27,7 +27,6 @@
     <packaging>pom</packaging>
     <modules>
         <module>clams-server</module>
-        <module>clams-shared</module>
     </modules>
 
     <scm>

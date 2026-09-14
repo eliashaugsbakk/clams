@@ -1,10 +1,11 @@
 # clams-cli
 
 > [!NOTE]
-> The Rust client in this directory was created entirely through AI-assisted
-> prompting (vibe coding). The server is separate. Read and understand the
-> client code before using it, especially against production systems or
-> content. Take appropriate precautions, test changes safely, and keep backups.
+> The Rust client in this directory was developed entirely with AI assistance.
+> The Java server core was coded manually, while later server functionality
+> was also developed with AI assistance. Read and understand the client and
+> server code before using them against production systems or content. Take
+> appropriate precautions, test changes safely, and keep backups.
 
 `clams-cli` is a Linux-oriented Rust command-line client for the Clams CMS.
 It uploads and edits blog posts, manages projects, and lists reusable images.
@@ -53,8 +54,8 @@ API calls. Keep the file private because it contains the API token.
 ```sh
 clams-cli ./content/my-post
 clams-cli blog upload ./content/my-post
-clams-cli blog edit existing-slug ./content/my-post
-clams-cli blog delete existing-slug
+clams-cli blog edit 12 ./content/my-post
+clams-cli blog delete 12
 clams-cli project add
 clams-cli project edit 12
 clams-cli project remove 12

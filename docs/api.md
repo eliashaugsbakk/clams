@@ -1,8 +1,10 @@
 # Clams HTTP API
 
 > [!NOTE]
-> This API reference was written by an LLM from the existing Java server
-> implementation. Verify it against the server before treating it as a stable
+> This API reference was developed with AI assistance from the Java server
+> implementation. The server core was coded manually, while later server
+> functionality was developed entirely with AI assistance. Verify this
+> reference against the implementation before treating it as a stable
 > contract.
 
 The API base URL is the server URL. Requests under `/api` require:
