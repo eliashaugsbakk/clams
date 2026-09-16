@@ -38,7 +38,7 @@ public class RssController {
             <title>%s</title>
             <link>%s</link>
             <description>Latest blog posts</description>
-            <language>en</language>
+            <language>no</language>
             %s
           </channel>
         </rss>

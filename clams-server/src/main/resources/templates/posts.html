@@ -15,7 +15,10 @@
     </header>
 
     <section id="all" class="posts-section">
-        <h2>Alle Innlegg</h2>
+        <h2 class="posts-section-heading">
+            <span>Alle Innlegg</span>
+            <a href="/rss.xml" class="rss-link">RSS</a>
+        </h2>
         {% for group in posts_by_year %}
         <details class="year-accordion" {% if loop.first %}open{% endif %}>
             <summary class="year-toggle">{{ group.key }}</summary>
