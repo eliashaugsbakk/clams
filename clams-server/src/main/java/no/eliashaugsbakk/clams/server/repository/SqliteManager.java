@@ -30,12 +30,12 @@ public class SqliteManager implements AutoCloseable {
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             slug TEXT NOT NULL UNIQUE,
             title TEXT NOT NULL,
-            content TEXT,
+            content TEXT NOT NULL,
             summary TEXT,
             created_at TEXT NOT NULL,
             published_at TEXT,
             updated_at TEXT NOT NULL,
-            is_published BOOLEAN
+            is_published BOOLEAN NOT NULL
         );
         """;
 
@@ -65,9 +65,55 @@ public class SqliteManager implements AutoCloseable {
       stmt.execute(posts);
       stmt.execute(images);
       stmt.execute(projects);
+      validateSchema(conn);
 
     } catch (SQLException e) {
       throw new RepoException("Error while initializing database", e);
+    }
+  }
+
+  private void validateSchema(Connection conn) throws SQLException {
+    validateTable(conn, "posts", new String[] {
+        "id", "slug", "title", "content", "summary", "created_at",
+        "published_at", "updated_at", "is_published"
+    });
+    validateNotNull(conn, "posts", "content");
+    validateNotNull(conn, "posts", "is_published");
+    validateTable(conn, "images", new String[] {
+        "uuid", "original_filename", "extension", "time_uploaded"
+    });
+    validateTable(conn, "projects", new String[] {
+        "id", "name", "read_more_url", "git_url", "git_hub_url", "description", "display_order"
+    });
+  }
+
+  private void validateNotNull(Connection conn, String table, String column) throws SQLException {
+    try (var stmt = conn.createStatement();
+        var columns = stmt.executeQuery("PRAGMA table_info(" + table + ")")) {
+      while (columns.next()) {
+        if (column.equals(columns.getString("name")) && columns.getBoolean("notnull")) {
+          return;
+        }
+      }
+      throw new SQLException("Database schema for table '" + table
+          + "' requires column '" + column + "' to be NOT NULL.");
+    }
+  }
+
+  private void validateTable(Connection conn, String table, String[] requiredColumns)
+      throws SQLException {
+    try (var stmt = conn.createStatement();
+        var columns = stmt.executeQuery("PRAGMA table_info(" + table + ")")) {
+      var found = new java.util.HashSet<String>();
+      while (columns.next()) {
+        found.add(columns.getString("name"));
+      }
+      for (String column : requiredColumns) {
+        if (!found.contains(column)) {
+          throw new SQLException("Database schema for table '" + table
+              + "' is missing required column '" + column + "'.");
+        }
+      }
     }
   }
 

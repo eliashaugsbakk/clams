@@ -6,6 +6,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.time.Instant;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -38,10 +39,10 @@ public class PostsRepoSqlite implements PostsRepo {
         String title = resultSet.getString("title");
         String slug = resultSet.getString("slug");
         String summary = resultSet.getString("summary");
-        Instant created = Instant.parse(resultSet.getString("created_at"));
+        Instant created = parseInstant(resultSet.getString("created_at"), id, "created_at");
         String publishedRaw = resultSet.getString("published_at");
-        Instant published = publishedRaw == null ? null : Instant.parse(publishedRaw);
-        Instant updated = Instant.parse(resultSet.getString("updated_at"));
+        Instant published = publishedRaw == null ? null : parseInstant(publishedRaw, id, "published_at");
+        Instant updated = parseInstant(resultSet.getString("updated_at"), id, "updated_at");
         boolean isPublished = resultSet.getBoolean("is_published");
 
         posts.add(new PostMetaData(id, title, slug, summary, created, published, updated, isPublished));
@@ -74,10 +75,10 @@ public class PostsRepoSqlite implements PostsRepo {
           String postSlug = resultSet.getString("slug");
           String summary = resultSet.getString("summary");
           String content = resultSet.getString("content");
-          Instant created = Instant.parse(resultSet.getString("created_at"));
+          Instant created = parseInstant(resultSet.getString("created_at"), id, "created_at");
           String publishedRaw = resultSet.getString("published_at");
-          Instant published = publishedRaw == null ? null : Instant.parse(publishedRaw);
-          Instant updated = Instant.parse(resultSet.getString("updated_at"));
+          Instant published = publishedRaw == null ? null : parseInstant(publishedRaw, id, "published_at");
+          Instant updated = parseInstant(resultSet.getString("updated_at"), id, "updated_at");
           boolean isPublished = resultSet.getBoolean("is_published");
 
           return Optional.of(new Post(postId, title, postSlug, summary, created, published, updated, content,
@@ -114,20 +115,29 @@ public class PostsRepoSqlite implements PostsRepo {
           String title = resultSet.getString("title");
           String slug = resultSet.getString("slug");
           String summary = resultSet.getString("summary");
-          Instant created = Instant.parse(resultSet.getString("created_at"));
+          Instant created = parseInstant(resultSet.getString("created_at"), id, "created_at");
           String publishedRaw = resultSet.getString("published_at");
-          Instant published = publishedRaw == null ? null : Instant.parse(publishedRaw);
-          Instant updated = Instant.parse(resultSet.getString("updated_at"));
+          Instant published = publishedRaw == null ? null : parseInstant(publishedRaw, id, "published_at");
+          Instant updated = parseInstant(resultSet.getString("updated_at"), id, "updated_at");
           boolean isPublished = resultSet.getBoolean("is_published");
 
           posts.add(new PostMetaData(id, title, slug, summary, created, published, updated, isPublished));
         }
+
       }
 
       return posts;
 
     } catch (SQLException e) {
       throw new RepoException("Error searching posts for query: " + query, e);
+    }
+  }
+
+  private Instant parseInstant(String value, long postId, String column) {
+    try {
+      return Instant.parse(value);
+    } catch (DateTimeParseException | NullPointerException e) {
+      throw new RepoException("Invalid timestamp in posts." + column + " for post " + postId, e);
     }
   }
 

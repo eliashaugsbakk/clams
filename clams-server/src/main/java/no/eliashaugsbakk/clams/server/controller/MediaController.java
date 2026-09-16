@@ -111,6 +111,10 @@ public class MediaController {
       // END LLM EDIT
     } catch (PayloadTooLargeException e) {
       ErrorResponses.payloadTooLarge(ctx, "Images must be no larger than 20 MiB.");
+    } catch (StorageFailureException e) {
+      ErrorResponses.serverError(ctx, "The image could not be stored.");
+    } catch (IOException e) {
+      ErrorResponses.serverError(ctx, "The image could not be read.");
     } catch (Exception e) {
       ErrorResponses.badRequest(ctx, "Corrupted or invalid image data.");
     }
@@ -149,7 +153,13 @@ public class MediaController {
       return uuid;
     } catch (Exception e) {
       Files.deleteIfExists(path);
-      throw new IOException("Failed to add image record to database", e);
+      throw new StorageFailureException("Failed to store image", e);
+    }
+  }
+
+  private static final class StorageFailureException extends RuntimeException {
+    private StorageFailureException(String message, Throwable cause) {
+      super(message, cause);
     }
   }
 
