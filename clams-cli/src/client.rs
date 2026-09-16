@@ -4,9 +4,16 @@
 //! JSON API calls, multipart JPEG uploads, and response models for the CLI.
 
 use crate::config::Config;
-use reqwest::blocking::{Client, multipart};
-use serde::{Deserialize, Serialize, de::DeserializeOwned};
+use reqwest::blocking::{multipart, Client};
+use serde::{de::DeserializeOwned, Deserialize, Serialize};
 use std::{fs, path::Path};
+
+// BEGIN LLM EDIT: Preserve structured API error messages in CLI failures.
+#[derive(Debug, Deserialize)]
+struct ApiError {
+    message: Option<String>,
+}
+// END LLM EDIT
 
 #[derive(Debug, Deserialize)]
 pub struct ImageResponse {
@@ -100,14 +107,44 @@ impl ApiClient {
         &self,
         response: reqwest::blocking::Response,
     ) -> Result<T, Box<dyn std::error::Error>> {
-        let response = response.error_for_status()?;
+        let response = Self::ensure_success(response)?;
         Ok(response.json()?)
     }
 
+    // BEGIN LLM EDIT: Report the server status, endpoint, and response message instead of
+    // returning reqwest's generic status error.
+    fn ensure_success(
+        response: reqwest::blocking::Response,
+    ) -> Result<reqwest::blocking::Response, Box<dyn std::error::Error>> {
+        if response.status().is_success() {
+            return Ok(response);
+        }
+
+        let status = response.status();
+        let url = response.url().clone();
+        let body = response.text().unwrap_or_default();
+        let message = serde_json::from_str::<ApiError>(&body)
+            .ok()
+            .and_then(|error| error.message)
+            .filter(|message| !message.trim().is_empty())
+            .unwrap_or_else(|| {
+                let body = body.trim();
+                if body.is_empty() {
+                    "The server did not provide an error message.".to_string()
+                } else {
+                    body.to_string()
+                }
+            });
+
+        Err(format!("API request failed ({status}) at {url}: {message}").into())
+    }
+    // END LLM EDIT
+
     pub fn test_connection(&self) -> Result<(), Box<dyn std::error::Error>> {
-        self.request(self.http.get(format!("{}/api/media", self.base_url)))
-            .send()?
-            .error_for_status()?;
+        let response = self
+            .request(self.http.get(format!("{}/api/media", self.base_url)))
+            .send()?;
+        Self::ensure_success(response)?;
         Ok(())
     }
 
@@ -153,25 +190,21 @@ impl ApiClient {
                     .delete(format!("{}/api/media/{uuid}", self.base_url)),
             )
             .send()?;
-        if response.status().is_success() {
-            return Ok(());
-        }
-
-        let status = response.status();
-        let message = response.text().unwrap_or_default();
-        Err(format!("Image deletion failed ({status}): {message}").into())
+        Self::ensure_success(response)?;
+        Ok(())
     }
 
     pub fn create_post(
         &self,
         payload: &PostPayload,
     ) -> Result<CreatedPost, Box<dyn std::error::Error>> {
-        let response = self.request(
-            self.http
-                .post(format!("{}/api/posts", self.base_url))
-                .json(payload),
-        )
-        .send()?;
+        let response = self
+            .request(
+                self.http
+                    .post(format!("{}/api/posts", self.base_url))
+                    .json(payload),
+            )
+            .send()?;
         self.json(response)
     }
 
@@ -189,23 +222,25 @@ impl ApiClient {
         id: i64,
         payload: &PostPayload,
     ) -> Result<(), Box<dyn std::error::Error>> {
-        self.request(
-            self.http
-                .put(format!("{}/api/posts/{id}", self.base_url))
-                .json(payload),
-        )
-        .send()?
-        .error_for_status()?;
+        let response = self
+            .request(
+                self.http
+                    .put(format!("{}/api/posts/{id}", self.base_url))
+                    .json(payload),
+            )
+            .send()?;
+        Self::ensure_success(response)?;
         Ok(())
     }
 
     pub fn delete_post(&self, id: i64) -> Result<(), Box<dyn std::error::Error>> {
-        self.request(
-            self.http
-                .delete(format!("{}/api/posts/{id}", self.base_url)),
-        )
-        .send()?
-        .error_for_status()?;
+        let response = self
+            .request(
+                self.http
+                    .delete(format!("{}/api/posts/{id}", self.base_url)),
+            )
+            .send()?;
+        Self::ensure_success(response)?;
         Ok(())
     }
 
@@ -217,13 +252,14 @@ impl ApiClient {
     }
 
     pub fn create_project(&self, project: &Project) -> Result<(), Box<dyn std::error::Error>> {
-        self.request(
-            self.http
-                .post(format!("{}/api/projects", self.base_url))
-                .json(project),
-        )
-        .send()?
-        .error_for_status()?;
+        let response = self
+            .request(
+                self.http
+                    .post(format!("{}/api/projects", self.base_url))
+                    .json(project),
+            )
+            .send()?;
+        Self::ensure_success(response)?;
         Ok(())
     }
 
@@ -232,23 +268,25 @@ impl ApiClient {
         id: i64,
         project: &Project,
     ) -> Result<(), Box<dyn std::error::Error>> {
-        self.request(
-            self.http
-                .put(format!("{}/api/projects/{id}", self.base_url))
-                .json(project),
-        )
-        .send()?
-        .error_for_status()?;
+        let response = self
+            .request(
+                self.http
+                    .put(format!("{}/api/projects/{id}", self.base_url))
+                    .json(project),
+            )
+            .send()?;
+        Self::ensure_success(response)?;
         Ok(())
     }
 
     pub fn delete_project(&self, id: i64) -> Result<(), Box<dyn std::error::Error>> {
-        self.request(
-            self.http
-                .delete(format!("{}/api/projects/{id}", self.base_url)),
-        )
-        .send()?
-        .error_for_status()?;
+        let response = self
+            .request(
+                self.http
+                    .delete(format!("{}/api/projects/{id}", self.base_url)),
+            )
+            .send()?;
+        Self::ensure_success(response)?;
         Ok(())
     }
 }

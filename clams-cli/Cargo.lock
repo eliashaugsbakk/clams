@@ -126,6 +126,7 @@ dependencies = [
  "image",
  "reqwest",
  "serde",
+ "serde_json",
  "toml",
 ]
 

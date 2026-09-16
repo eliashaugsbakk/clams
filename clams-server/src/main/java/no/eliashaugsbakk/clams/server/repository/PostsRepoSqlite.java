@@ -133,10 +133,12 @@ public class PostsRepoSqlite implements PostsRepo {
 
   @Override
   public long addPost(Post post) {
+    // BEGIN LLM EDIT: Bind all eight post columns when inserting a new post.
     String sql = """
         INSERT INTO posts (slug, title, content, summary, created_at, published_at, updated_at, is_published)
-        VALUES (?, ?, ?, ?, ?, ?, ?)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
         """;
+    // END LLM EDIT
 
     try (Connection conn = manager.getConnection();
         PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
