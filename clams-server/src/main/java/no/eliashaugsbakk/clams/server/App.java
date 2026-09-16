@@ -1,6 +1,7 @@
 package no.eliashaugsbakk.clams.server;
 
 import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import io.javalin.Javalin;
 import io.javalin.http.BadRequestResponse;
 import io.javalin.http.ConflictResponse;
@@ -28,7 +29,7 @@ public class App {
         });
         config.fileRenderer(new JavalinPebble());
         config.jsonMapper(new JavalinJackson().updateMapper(mapper ->
-            mapper.findAndRegisterModules()));
+            mapper.findAndRegisterModules().disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)));
 
         // BEGIN LLM EDIT: Use one content-aware error response policy for all common statuses.
         config.routes.error(400, ctx -> ErrorResponses.badRequest(ctx, "The request could not be understood."));
