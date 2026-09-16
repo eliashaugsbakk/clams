@@ -5,6 +5,7 @@ import io.javalin.Javalin;
 import io.javalin.http.BadRequestResponse;
 import io.javalin.http.ConflictResponse;
 import io.javalin.http.NotFoundResponse;
+import io.javalin.json.JavalinJackson;
 import io.javalin.rendering.template.JavalinPebble;
 import no.eliashaugsbakk.clams.server.config.AppContext;
 import no.eliashaugsbakk.clams.server.config.AppRoutes;
@@ -26,6 +27,8 @@ public class App {
           staticFiles.directory = "/public";
         });
         config.fileRenderer(new JavalinPebble());
+        config.jsonMapper(new JavalinJackson().updateMapper(mapper ->
+            mapper.findAndRegisterModules()));
 
         // BEGIN LLM EDIT: Use one content-aware error response policy for all common statuses.
         config.routes.error(400, ctx -> ErrorResponses.badRequest(ctx, "The request could not be understood."));
