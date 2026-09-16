@@ -63,6 +63,7 @@ public class SqliteManager implements AutoCloseable {
     try (Connection conn = dataSource.getConnection(); Statement stmt = conn.createStatement()) {
 
       stmt.execute(posts);
+      migratePostsSchema(conn);
       stmt.execute(images);
       stmt.execute(projects);
 
@@ -70,6 +71,47 @@ public class SqliteManager implements AutoCloseable {
       throw new RepoException("Error while initializing database", e);
     }
   }
+
+  // BEGIN LLM EDIT: Migrate deployed databases from the legacy post timestamp columns.
+  /**
+   * Disclaimer: This migration was written by an LLM to keep existing SQLite installations
+   * compatible with the explicit post timestamp schema.
+   */
+  private void migratePostsSchema(Connection conn) throws SQLException {
+    if (hasColumn(conn, "posts", "published")
+        && !hasColumn(conn, "posts", "published_at")) {
+      try (Statement stmt = conn.createStatement()) {
+        stmt.execute("ALTER TABLE posts RENAME COLUMN published TO published_at");
+      }
+    }
+
+    if (hasColumn(conn, "posts", "last_edited")
+        && !hasColumn(conn, "posts", "updated_at")) {
+      try (Statement stmt = conn.createStatement()) {
+        stmt.execute("ALTER TABLE posts RENAME COLUMN last_edited TO updated_at");
+      }
+    }
+
+    if (!hasColumn(conn, "posts", "created_at")) {
+      try (Statement stmt = conn.createStatement()) {
+        stmt.execute("ALTER TABLE posts ADD COLUMN created_at TEXT");
+        stmt.execute("UPDATE posts SET created_at = published_at WHERE created_at IS NULL");
+      }
+    }
+  }
+
+  private boolean hasColumn(Connection conn, String table, String column) throws SQLException {
+    try (var stmt = conn.createStatement();
+        var columns = stmt.executeQuery("PRAGMA table_info(" + table + ")")) {
+      while (columns.next()) {
+        if (column.equals(columns.getString("name"))) {
+          return true;
+        }
+      }
+      return false;
+    }
+  }
+  // END LLM EDIT
 
   public Connection getConnection() throws SQLException {
     return dataSource.getConnection();
