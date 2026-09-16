@@ -18,8 +18,11 @@ struct ApiError {
 #[derive(Debug, Deserialize)]
 pub struct ImageResponse {
     pub uuid: String,
+    #[serde(rename = "originalFilename")]
     pub original_filename: Option<String>,
+    #[serde(rename = "contentType")]
     pub content_type: Option<String>,
+    #[serde(rename = "timeUploaded")]
     pub time_uploaded: Option<String>,
 }
 

@@ -14,6 +14,8 @@ Authorization: Bearer <authorization-token>
 ```
 
 The unversioned `/api` namespace is the project's version-one API contract.
+The authorization header value must use the `Bearer` scheme:
+`Authorization: Bearer <api-token>`.
 Compatible additions may be made within the `1.x` release line. Existing
 endpoints and response fields should not be removed or change meaning without a
 major-version decision.

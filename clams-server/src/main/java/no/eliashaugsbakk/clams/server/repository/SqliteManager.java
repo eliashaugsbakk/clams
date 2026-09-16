@@ -66,37 +66,70 @@ public class SqliteManager implements AutoCloseable {
       migratePostsSchema(conn);
       stmt.execute(images);
       stmt.execute(projects);
+      migrateProjectsSchema(conn);
 
     } catch (SQLException e) {
       throw new RepoException("Error while initializing database", e);
     }
   }
 
-  // BEGIN LLM EDIT: Migrate deployed databases from the legacy post timestamp columns.
+  // BEGIN LLM EDIT: Migrate deployed databases to the current post and project schemas.
   /**
-   * Disclaimer: This migration was written by an LLM to keep existing SQLite installations
-   * compatible with the explicit post timestamp schema.
+   * Disclaimer: These migrations were written by an LLM to keep existing SQLite installations
+   * compatible with the current post timestamp and project ordering schemas.
    */
   private void migratePostsSchema(Connection conn) throws SQLException {
-    if (hasColumn(conn, "posts", "published")
-        && !hasColumn(conn, "posts", "published_at")) {
+    boolean legacyTimestamps = hasColumn(conn, "posts", "published")
+        && hasColumn(conn, "posts", "last_edited");
+    boolean needsRebuild = legacyTimestamps
+        || !hasColumn(conn, "posts", "created_at")
+        || isNotNull(conn, "posts", "published_at");
+
+    if (needsRebuild) {
       try (Statement stmt = conn.createStatement()) {
-        stmt.execute("ALTER TABLE posts RENAME COLUMN published TO published_at");
+        String createdAt = hasColumn(conn, "posts", "created_at") ? "created_at" : "published";
+        String publishedAt = legacyTimestamps ? "published" : "published_at";
+        String updatedAt = legacyTimestamps ? "last_edited" : "updated_at";
+        stmt.execute("""
+            CREATE TABLE posts_migrated (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                slug TEXT NOT NULL UNIQUE,
+                title TEXT NOT NULL,
+                content TEXT,
+                summary TEXT,
+                created_at TEXT NOT NULL,
+                published_at TEXT,
+                updated_at TEXT NOT NULL,
+                is_published BOOLEAN
+            )
+            """);
+        stmt.execute("INSERT INTO posts_migrated "
+            + "(id, slug, title, content, summary, created_at, published_at, updated_at, is_published) "
+            + "SELECT id, slug, title, content, summary, " + createdAt + ", " + publishedAt + ", "
+            + updatedAt + ", is_published FROM posts");
+        stmt.execute("DROP TABLE posts");
+        stmt.execute("ALTER TABLE posts_migrated RENAME TO posts");
       }
     }
+  }
 
-    if (hasColumn(conn, "posts", "last_edited")
-        && !hasColumn(conn, "posts", "updated_at")) {
+  private void migrateProjectsSchema(Connection conn) throws SQLException {
+    if (!hasColumn(conn, "projects", "display_order")) {
       try (Statement stmt = conn.createStatement()) {
-        stmt.execute("ALTER TABLE posts RENAME COLUMN last_edited TO updated_at");
+        stmt.execute("ALTER TABLE projects ADD COLUMN display_order INTEGER NOT NULL DEFAULT 0");
       }
     }
+  }
 
-    if (!hasColumn(conn, "posts", "created_at")) {
-      try (Statement stmt = conn.createStatement()) {
-        stmt.execute("ALTER TABLE posts ADD COLUMN created_at TEXT");
-        stmt.execute("UPDATE posts SET created_at = published_at WHERE created_at IS NULL");
+  private boolean isNotNull(Connection conn, String table, String column) throws SQLException {
+    try (var stmt = conn.createStatement();
+        var columns = stmt.executeQuery("PRAGMA table_info(" + table + ")")) {
+      while (columns.next()) {
+        if (column.equals(columns.getString("name"))) {
+          return columns.getBoolean("notnull");
+        }
       }
+      return false;
     }
   }
 
